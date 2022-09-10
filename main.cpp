@@ -35,14 +35,25 @@ int	main()
     	std::cout << ' ' << *it;
   	std::cout << '\n';
 
-	first = fifth;
+	/*first = fifth;
 	std::cout << "The contents of first are:";
 	for (size_t i = 0; i < first.size(); i++)
 		std::cout << first[i] << " ";
+	std::cout << std::endl;*/
+
+	for (int i = 0; i < 10; i++)
+		first.push_back(i);
+	std::cout << "The contents of first are: ";
+	for (size_t i = 0; i < first.size(); i++)
+		std::cout << first[i] << " ";
 	std::cout << std::endl;
-	//for (int i = 0; i < 10; i++)
-	//	ft_vector.push_back(i);
-	//for (int i = 0; i < ft_vector.size(); i++)
-	//	std::cout << ft_vector[i] << " ";
-	//std::cout << std::endl;
+	
+	while (first.size() != 0)
+	{
+		first.pop_back();
+		std::cout << "The contents of first are:";
+  		for (ft::vector<int>::iterator it = first.begin(); it != first.end(); ++it)
+    		std::cout << ' ' << *it;
+  		std::cout << '\n';
+	}
 }

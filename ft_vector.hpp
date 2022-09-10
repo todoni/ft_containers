@@ -35,7 +35,8 @@ protected:
     iterator start;
     iterator finish;
     iterator end_of_storage;
-
+	
+	
 public:
 	/* iterator */
 	iterator begin() { return start; }
@@ -112,8 +113,57 @@ public:
 		}
 		return (*this);
 	}
+protected:
+	void	insert_aux(iterator position, const value_type& x)
+	{
+		if (finish != end_of_storage) 
+		{
+			static_allocator.construct(finish, *(finish - 1));
+			std::copy_backward(position, finish - 1, finish);
+			*position = x;
+			++finish;
+    	}
+		else 
+		{
+			size_type len = 2 * size();
+			iterator tmp = static_allocator.allocate(len);
+			std::uninitialized_copy(begin(), position, tmp);
+			static_allocator.construct(tmp + (position - begin()), x);
+			std::uninitialized_copy(position, end(), tmp + (position - begin()) + 1); 
+			static_allocator.destroy(end());
+			static_allocator.deallocate(begin(), capacity());
+			end_of_storage = tmp + len;
+			finish = tmp + size() + 1;
+			start = tmp;
+   	 	}
+	}
+
+public:
+	void		push_back(const value_type& val)
+	{
+		if (finish != end_of_storage)
+		{
+	    /* Borland bug */
+	    	static_allocator.construct(finish, val);
+	    	finish++;
+		}
+		else
+	    	insert_aux(end(), val);
+	}
+	void		pop_back(void)
+	{
+		--finish;
+		static_allocator.destroy(end());
+	}
+	iterator	insert(iterator position, const value_type& val);
+	void		insert(iterator position, size_type n, const value_type& val);
+	template <class InputIterator>
+		void	insert(iterator position, InputIterator first, InputIterator last);
 };
 
 }
+
+
+
 
 #endif
