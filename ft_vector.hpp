@@ -53,14 +53,54 @@ public:
     //}
 
 	/* capacity */
-    size_type size() const { return size_type(end() - begin()); }
-    size_type max_size() const { return static_allocator.max_size(); }
-    size_type capacity() const { return size_type(end_of_storage - begin()); }
-    bool empty() const { return begin() == end(); }
+    size_type	size() const { return size_type(end() - begin()); }
+    size_type	max_size() const { return static_allocator.max_size(); }
+    size_type	capacity() const { return size_type(end_of_storage - begin()); }
+    bool		empty() const { return begin() == end(); }
+	void		reserve(size_type n)
+	{
+		if (n > max_size())
+			throw std::length_error("length_error");
+		if (n > capacity())
+		{
+			/*reallocate*/
+			iterator tmp = static_allocator.allocate(n);
+			std::uninitialized_copy(begin(), end(), tmp);
+			static_allocator.destroy(finish);
+	    	static_allocator.deallocate(start, capacity());
+	    	finish = tmp + size();
+	    	start = tmp;
+	    	end_of_storage = begin() + n;
+		}
+	}
+	void		resize(size_type n, value_type val = value_type())
+	{
+		size_type	size_ = size();
+		for (size_type i = n; i < size_; i++)
+			static_allocator.destroy(--finish);
+		reserve(n);
+		for (size_type i = size(); i < n; i++)
+		{	
+			static_allocator.construct(finish, val);
+			++finish;
+		}
+	}
  
 	/* element access */
-	reference operator[](size_type n) { return *(begin() + n); }
+	reference		operator[](size_type n) { return *(begin() + n); }
     const_reference operator[](size_type n) const { return *(begin() + n); }
+	reference		at(size_type n)
+	{
+		if (n >= size())
+			throw std::out_of_range("vector");
+		return (*(begin() + n));
+	}
+	const_reference	at(size_type n) const
+	{
+		if (n >= size())
+			throw std::out_of_range("vector");
+		return (*(begin() + n));
+	}
 
 	/* construct/copy/destruct */
 	explicit vector(const allocator_type& alloc = allocator_type())
@@ -125,7 +165,7 @@ protected:
     	}
 		else 
 		{
-			size_type len = 2 * size();
+			size_type len = 2 * size() + 1;
 			iterator tmp = static_allocator.allocate(len);
 			std::uninitialized_copy(begin(), position, tmp);
 			static_allocator.construct(tmp + (position - begin()), x);

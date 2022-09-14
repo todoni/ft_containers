@@ -56,4 +56,116 @@ int	main()
     		std::cout << ' ' << *it;
   		std::cout << '\n';
 	}
+
+	ft::vector<int> myvector;
+	std::cout << "capacity: " << myvector.capacity();
+	std::cout << "   size: " << myvector.size() << std::endl;
+
+  	// set some initial content:
+	std::cout << "capacity: " << myvector.capacity() << std::endl;
+  	for (int i=1;i<10;i++)
+	{
+
+		myvector.push_back(i);
+		std::cout << myvector.capacity() << std::endl;
+	}
+	std::cout << "capacity: " << myvector.capacity();
+	std::cout << "   size: " << myvector.size() << std::endl;
+	for (size_t i=0; i <myvector.size();i++)
+		std::cout << ' ' << myvector[i];
+	std::cout << '\n';
+
+  	myvector.resize(5);
+	std::cout << "capacity: " << myvector.capacity();
+	std::cout << "   size: " << myvector.size() << std::endl;
+	for (size_t i=0; i <myvector.size();i++)
+		std::cout << ' ' << myvector[i];
+	std::cout << '\n';
+
+  	myvector.resize(8,100);
+  	std::cout << "capacity: " << myvector.capacity();
+	std::cout << "   size: " << myvector.size() << std::endl;
+	for (size_t i=0; i <myvector.size();i++)
+		std::cout << ' ' << myvector[i];
+	std::cout << '\n';
+
+	myvector.resize(12);
+	std::cout << "capacity: " << myvector.capacity();
+	std::cout << "   size: " << myvector.size() << std::endl;
+	for (size_t i=0; i <myvector.size();i++)
+		std::cout << ' ' << myvector[i];
+	std::cout << '\n';
+
+	std::cout << "myvector contains:";
+	for (size_t i=0; i <myvector.size();i++)
+		std::cout << ' ' << myvector[i];
+	std::cout << '\n';
+
+	std::cout << "stl vector" << std::endl;
+	std::vector<int> myvector2;
+
+	std::cout << "capacity: " << myvector2.capacity();
+	std::cout << "   size: " << myvector2.size() << std::endl;
+  	
+	// set some initial content:
+	std::cout << "capacity: " << myvector2.capacity() << std::endl;
+  	for (int i=1;i<10;i++)
+	{
+		myvector2.push_back(i);
+		std::cout << myvector2.capacity() << std::endl;
+	}
+	std::cout << "capacity: " << myvector2.capacity();
+	std::cout << "   size: " << myvector2.size() << std::endl;
+	for (size_t i=0; i <myvector2.size();i++)
+		std::cout << ' ' << myvector2[i];
+	std::cout << '\n';
+  	
+	myvector2.resize(5);
+	std::cout << "capacity: " << myvector2.capacity();
+	std::cout << "   size: " << myvector2.size() << std::endl;
+	for (size_t i=0; i <myvector2.size();i++)
+		std::cout << ' ' << myvector2[i];
+	std::cout << '\n';
+
+  	myvector2.resize(8,100);
+	std::cout << "capacity: " << myvector2.capacity();
+	std::cout << "   size: " << myvector2.size() << std::endl;
+	for (size_t i=0; i <myvector2.size();i++)
+		std::cout << ' ' << myvector2[i];
+	std::cout << '\n';
+
+  	myvector2.resize(12);
+	std::cout << "capacity: " << myvector2.capacity();
+	std::cout << "   size: " << myvector2.size() << std::endl;
+	for (size_t i=0; i <myvector2.size();i++)
+		std::cout << ' ' << myvector2[i];
+	std::cout << '\n';
+	
+	std::cout << "myvector2 contains:";
+	for (size_t i=0; i <myvector2.size();i++)
+		std::cout << ' ' << myvector2[i];
+	std::cout << '\n';
+
+
+	ft::vector<int> test_at(10);   // 10 zero-initialized ints
+  // assign some values:
+  	for (unsigned i=0; i < test_at.size(); i++)
+		test_at.at(i)=i;
+	std::cout << "myvector contains:";
+	for (unsigned i=0; i<test_at.size(); i++)
+		std::cout << ' ' << test_at.at(i);
+	std::cout << '\n';
+	std::cout << "exception test" << std::endl;
+	test_at.at(test_at.size());
+
+	std::vector<int> test_std(10);   // 10 zero-initialized ints
+  // assign some values:
+  	for (unsigned i=0; i < test_std.size(); i++)
+		test_std.at(i)=i;
+	std::cout << "myvector contains:";
+	for (unsigned i=0; i < test_std.size(); i++)
+		std::cout << ' ' << test_std.at(i);
+	std::cout << '\n';
+	test_std.at(test_std.size());
+
 }
