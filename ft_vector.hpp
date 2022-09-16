@@ -101,6 +101,22 @@ public:
 			throw std::out_of_range("vector");
 		return (*(begin() + n));
 	}
+	reference front()
+	{
+		return (*begin());
+	}
+	const_reference front() const
+	{
+		return (*begin());
+	}
+	reference back()
+	{
+		return (*(end() - 1));
+	}
+	const_reference back() const
+	{
+		return (*(end() - 1));
+	}
 
 	/* construct/copy/destruct */
 	explicit vector(const allocator_type& alloc = allocator_type())
@@ -195,10 +211,28 @@ public:
 		--finish;
 		static_allocator.destroy(end());
 	}
-	iterator	insert(iterator position, const value_type& val);
-	void		insert(iterator position, size_type n, const value_type& val);
+	iterator	insert(iterator position, const value_type& val)
+	{
+		size_type dist = position - begin();
+		if (finish != end_of_storage && position == end())
+		{
+	    	/* Borland bug */
+	    	construct(finish, val);
+	    	finish++;
+		}
+		else
+	    	insert_aux(position, val);
+		return (begin() + dist);
+	}
+	void		insert(iterator position, size_type n, const value_type& val)
+	{
+
+	}
 	template <class InputIterator>
-		void	insert(iterator position, InputIterator first, InputIterator last);
+	void	insert(iterator position, InputIterator first, InputIterator last)
+	{
+	
+	}
 };
 
 }
