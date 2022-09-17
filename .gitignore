@@ -1,6 +1,14 @@
+# Ignore all
+*
+
+# Unignore all with extensions
+!*.*
+
+# Unignore all dirs
+!*/
+
 *.out
 *.o
 *.d
 *.ccls
 *.dSYM
-*test*
