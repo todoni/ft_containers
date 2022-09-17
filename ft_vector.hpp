@@ -60,15 +60,17 @@ public:
 	void		reserve(size_type n)
 	{
 		if (n > max_size())
-			throw std::length_error("length_error");
+			throw std::length_error("vector");
 		if (n > capacity())
 		{
 			/*reallocate*/
 			iterator tmp = static_allocator.allocate(n);
+			size_type save = size();
 			std::uninitialized_copy(begin(), end(), tmp);
-			static_allocator.destroy(finish);
+			while (finish != start)
+				static_allocator.destroy(--finish);
 	    	static_allocator.deallocate(start, capacity());
-	    	finish = tmp + size();
+	    	finish = tmp + save;
 	    	start = tmp;
 	    	end_of_storage = begin() + n;
 		}
@@ -161,13 +163,38 @@ public:
 
 	vector& operator=(const vector& x)
 	{
-		if (this != &x)
+		/*if (this != &x)
 		{
 			this->start = static_allocator.allocate(x.end() - x.begin());
 			this->finish = std::uninitialized_copy(x.begin(), x.end(), start);
 			this->end_of_storage = finish;
 		}
-		return (*this);
+		return (*this);*/
+
+		if (&x == this) return *this;
+    	if (x.size() > capacity())
+		{
+			while (finish != start)
+				static_allocator.destroy(--finish);
+			//destroy(start, finish);
+			static_allocator.deallocate(start, capacity());
+			start = static_allocator.allocate(x.end() - x.begin());
+			end_of_storage = std::uninitialized_copy(x.begin(), x.end(), start);
+    	}
+		else if (size() >= x.size())
+		{
+			iterator i = std::copy(x.begin(), x.end(), begin());
+			while (finish != i)
+				static_allocator.destroy(--finish);
+			// work around for destroy(copy(x.begin(), x.end(), begin()), finish);
+    	}
+		else
+		{
+			std::copy(x.begin(), x.begin() + size(), begin());
+			std::uninitialized_copy(x.begin() + size(), x.end(), begin() + size());
+    	}
+    	finish = begin() + x.size();
+    	return (*this);
 	}
 protected:
 	void	insert_aux(iterator position, const value_type& x)
@@ -226,14 +253,159 @@ public:
 	}
 	void		insert(iterator position, size_type n, const value_type& val)
 	{
-
+		if (end_of_storage - finish >= n)
+		{
+			if (end() - position > n)
+			{
+				std::cout << "end() - position > n" << std::endl;
+				std::cout << end() - position << std::endl;
+				std::uninitialized_copy(end() - n, end(), end());
+				std::copy_backward(position, end() - n, end());
+				std::fill(position, position + n, val);
+			}
+			else
+			{
+				std::cout << "end() - position <= n" << std::endl;
+				std::cout << end() - position << std::endl;
+				std::uninitialized_copy(position, end(), position + n);
+				std::fill(position, end(), val);
+				std::uninitialized_fill_n(end(), n - (end() - position), val);
+			}
+			finish += n;	
+		}
+		else
+		{
+			std::cout << "grow size" << std::endl;
+			size_type len = size() + std::max(size(), n);
+			size_type	save = size();
+			std::cout << len << std::endl;
+			iterator tmp = static_allocator.allocate(len);
+			std::uninitialized_copy(begin(), position, tmp);
+			std::uninitialized_fill_n(tmp + (position - begin()), n, val);
+			std::uninitialized_copy(position, end(), tmp + (position - begin() + n));
+			while (finish != start)
+				static_allocator.destroy(--finish);
+			static_allocator.deallocate(start, capacity());
+			end_of_storage = tmp + len;
+			finish = tmp + save + n;
+			start = tmp;
+		}
 	}
 	template <class InputIterator>
-	void	insert(iterator position, InputIterator first, InputIterator last)
+	void	insert(iterator position, InputIterator first, InputIterator last,
+			typename std::enable_if<!std::is_integral<InputIterator>::value,
+                                				InputIterator>::type * = 0)
 	{
-	
+		size_type n = std::distance(first, last);
+		if (end_of_storage - finish >= n)
+		{
+			if (end() - position > n)
+			{
+				std::uninitialized_copy(end() - n, end(), end());
+				std::copy_backward(position, end() - n, end());
+				std::copy(first, last, position);
+			}
+			else
+			{
+				std::uninitialized_copy(position, end(), position + n);
+				std::copy(first, first + (end() - position), position);
+				std::uninitialized_copy(first + (end() - position), last, end());
+			}
+			finish += n;	
+		}
+		else
+		{
+			size_type len = size() + std::max(size(), n);
+			size_type	save = size();
+			iterator tmp = static_allocator.allocate(len);
+			std::uninitialized_copy(begin(), position, tmp);
+			std::uninitialized_copy(first, last, tmp + (position - begin()));
+			std::uninitialized_copy(position, end(), tmp + (position - begin() + n));
+			while (finish != start)
+				static_allocator.destroy(--finish);
+			static_allocator.deallocate(start, capacity());
+			end_of_storage = tmp + len;
+			finish = tmp + save + n;
+			start = tmp;
+		}	
+	}
+	iterator	erase(iterator position)
+	{
+		if (position + 1 != end())
+			std::copy(position + 1, end(), position);
+		--finish;
+		static_allocator.destroy(finish);
+		return (position);
+	}
+	iterator	erase(iterator first, iterator last)
+	{
+		iterator i = std::copy(last, end(), first);
+		while (finish != i)
+			static_allocator.destroy(--finish);
+		return (i);
+	}
+	void		swap(vector& x)
+	{
+		std::swap(start, x.start);
+		std::swap(finish, x.finish);
+		std::swap(end_of_storage, x.end_of_storage);
+	}
+	void		clear()
+	{
+		while (finish != start)
+			static_allocator.destroy(--finish);
+	}
+	allocator_type get_allocator() const
+	{
+		return (static_allocator);
 	}
 };
+
+template <class T, class Alloc>
+inline bool operator==(const ft::vector<T,Alloc>& lhs, const ft::vector<T,Alloc>& rhs)
+{
+	return (lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin()));
+}
+
+template <class T, class Alloc>
+inline bool operator!=(const ft::vector<T,Alloc>& lhs, const ft::vector<T,Alloc>& rhs)
+{
+	return (!operator==(lhs, rhs));
+}
+
+template <class T, class Alloc>
+inline bool operator<(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+{
+	return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+
+template <class T, class Alloc>
+inline bool operator<=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+{
+	return (operator<(lhs, rhs) || operator==(lhs, rhs));
+}
+
+template <class T, class Alloc>
+inline bool operator>(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+{
+	return (!operator<(lhs, rhs) && !operator==(lhs, rhs));
+}
+
+template <class T, class Alloc>
+inline bool operator>=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+{
+	return (!operator<(lhs, rhs));
+}
+
+template<class T, class Alloc>
+void swap(vector<T,Alloc>& lhs, vector<T,Alloc>& rhs)
+{
+	vector<T, Alloc>	tmp;
+
+	tmp = lhs;
+	lhs = rhs;
+	rhs = tmp;
+}
 
 }
 
