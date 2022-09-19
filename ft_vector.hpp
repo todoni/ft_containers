@@ -2,7 +2,8 @@
 # define FT_VECTOR_HPP
 
 # include <memory>
-# include <algorithm>
+# include <algorithm> //TODO: ft_algorithm 구현 되면 바꿔야함
+# include "ft_iterator.hpp"
 
 # ifndef Allocator
 # define Allocator allocator
@@ -26,14 +27,14 @@ public:
 	typedef const_pointer const_iterator;
 	typedef typename allocator_type::size_type size_type;
 	typedef typename allocator_type::difference_type difference_type;
-	//typedef reverse_iterator<iterator, value_type, const_reference, difference_type> reverse_iterator; //TODO: reverse_iterator 따로 구현
-	//typedef reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef ft::reverse_iterator<iterator>	reverse_iterator;
+	typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
+
 protected:
     Allocator static_allocator;
     iterator start;
     iterator finish;
     iterator end_of_storage;
-	
 	
 public:
 	/* iterator */
@@ -41,14 +42,14 @@ public:
     const_iterator begin() const { return start; }
     iterator end() { return finish; }
     const_iterator end() const { return finish; }
-    //reverse_iterator rbegin() { return reverse_iterator(end()); }
-    //const_reverse_iterator rbegin() const { 
-    //    return const_reverse_iterator(end()); 
-    //}
-    //reverse_iterator rend() { return reverse_iterator(begin()); }
-    //const_reverse_iterator rend() const { 
-    //    return const_reverse_iterator(begin()); 
-    //}
+    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    const_reverse_iterator rbegin() const { 
+        return const_reverse_iterator(end()); 
+    }
+    reverse_iterator rend() { return reverse_iterator(begin()); }
+    const_reverse_iterator rend() const { 
+        return const_reverse_iterator(begin()); 
+    }
 
 	/* capacity */
     size_type	size() const { return size_type(end() - begin()); }
@@ -353,13 +354,13 @@ public:
 };
 
 template <class T, class Alloc>
-inline bool operator==(const ft::vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+inline bool operator==(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return (lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin()));
 }
 
 template <class T, class Alloc>
-inline bool operator!=(const ft::vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
+inline bool operator!=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return (!operator==(lhs, rhs));
 }
