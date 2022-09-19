@@ -2,9 +2,7 @@
 # define FT_VECTOR_HPP
 
 # include <memory>
-# include <iterator>
-
-#include <iostream>
+# include <algorithm>
 
 # ifndef Allocator
 # define Allocator allocator
@@ -124,7 +122,6 @@ public:
 	explicit vector(const allocator_type& alloc = allocator_type())
 		:static_allocator(alloc), start(0), finish(0), end_of_storage(0)
 	{
-		std::cout << "Construct empty vector" << std::endl;
 	}
 	explicit vector (size_type n, const value_type& val = value_type(),
                  const allocator_type& alloc = allocator_type())
@@ -257,16 +254,12 @@ public:
 		{
 			if (end() - position > n)
 			{
-				std::cout << "end() - position > n" << std::endl;
-				std::cout << end() - position << std::endl;
 				std::uninitialized_copy(end() - n, end(), end());
 				std::copy_backward(position, end() - n, end());
 				std::fill(position, position + n, val);
 			}
 			else
 			{
-				std::cout << "end() - position <= n" << std::endl;
-				std::cout << end() - position << std::endl;
 				std::uninitialized_copy(position, end(), position + n);
 				std::fill(position, end(), val);
 				std::uninitialized_fill_n(end(), n - (end() - position), val);
@@ -275,10 +268,8 @@ public:
 		}
 		else
 		{
-			std::cout << "grow size" << std::endl;
 			size_type len = size() + std::max(size(), n);
 			size_type	save = size();
-			std::cout << len << std::endl;
 			iterator tmp = static_allocator.allocate(len);
 			std::uninitialized_copy(begin(), position, tmp);
 			std::uninitialized_fill_n(tmp + (position - begin()), n, val);
@@ -362,13 +353,13 @@ public:
 };
 
 template <class T, class Alloc>
-inline bool operator==(const ft::vector<T,Alloc>& lhs, const ft::vector<T,Alloc>& rhs)
+inline bool operator==(const ft::vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return (lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin()));
 }
 
 template <class T, class Alloc>
-inline bool operator!=(const ft::vector<T,Alloc>& lhs, const ft::vector<T,Alloc>& rhs)
+inline bool operator!=(const ft::vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return (!operator==(lhs, rhs));
 }
