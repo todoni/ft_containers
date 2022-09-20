@@ -32,8 +32,8 @@ public:
 
 	};
 
-	class	value_compare {
-		friend class map;
+	class	value_compare : public std::binary_function<value_type, value_type, bool> {
+		friend class map<Key, T, Compare>;
 	protected:
 		Compare comp;
       	value_compare(Compare c) : comp(c) {}
