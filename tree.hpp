@@ -32,6 +32,9 @@ protected:
 		void_pointer	right;
 		Value			value;
 	};
+	static std::allocator<avl_tree_node>	avl_tree_node_allocator;
+    static std::allocator<Value> 			value_allocator;
+
 public:
 	typedef Key		key_type;
     typedef Value	value_type;
@@ -47,12 +50,40 @@ protected:
 	link_type		header;
 	size_type		node_count;
 
+	/*make root*/
+	void init()
+	{
+		header = avl_tree_node_allocator.allocate(1);
+		header->height = 0;
+		header->parent = 0;
+		header->left = 0;
+		header->right = 0;
+		header->value = value_allocator.allocate(1);
+	}
+
 	/*balancing*/
 	/*insert*/
 	/*delete*/
 
 public:
 	/*construct, destruct*/
+	avl_tree()
+		:header(0), node_count(0)
+	{
+		init();
+	}
+	avl_tree(const avl_tree& x)
+	{
+
+	}
+	~avl_tree()
+	{
+
+	}
+	avl_tree&	operator=(const avl_tree& x)
+	{
+
+	}
 	/*public insert, delete*/
 	/*search*/
 };
