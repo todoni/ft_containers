@@ -2,6 +2,7 @@
 # define TREE_H
 
 # include <memory>
+# include <iostream>
 
 template <class Key, class T, class Compare = std::less<Key>, class Allocator = std::allocator<T> >
 class	BinarySearchTree
@@ -16,12 +17,13 @@ class	BinarySearchTree
 protected:
 	class	bst_node
 	{
+	public:
 		int			height;
 		bst_node	*left;
 		bst_node	*right;
 		value_type	data;
 		
-		static std::allocator<bst_node>	node_allocator;
+		
 	};
 	
 public:
@@ -33,9 +35,16 @@ protected:
 	link_type				root;
 	size_type				node_count;
 	key_compare				comp;
+	static	std::allocator<bst_node>	node_allocator;
 
 private:
-	void	init(); //tree node init
+	void	init()//tree node init
+	{
+		root = node_allocator.allocate(1);
+		root->height = 0;
+		root->left = 0;
+		root->right = 0;
+	}
 
 public:
 	BinarySearchTree(const Compare& comp = Compare())
@@ -43,13 +52,25 @@ public:
 	{
 		init();
 	}
-	~BinarySearchTree();
+	~BinarySearchTree() {}
 
-	bool		empty() const;
-	size_type	size() const;
-	size_type	max_size() const;
+	bool		empty() const
+	{
+		return (node_count == 0);
+	}
+	size_type	size() const
+	{
+		return (node_count);
+	}
+	size_type	max_size() const
+	{
+		return (node_allocator.max_size());
+	}
 
-	void		insert();
+	std::pair<iterator, bool>		insert(const value_type& val)
+	{
+		
+	}
 	void		erase();
 	void		swap (BinarySearchTree& x);
 	void		clear();
@@ -63,5 +84,8 @@ public:
 	//const_iterator find (const key_type& k) const;
 
 };
+
+template <class Key, class T, class Compare, class Allocator>
+typename BinarySearchTree<Key, T, Compare, Allocator>::node_allocator_type BinarySearchTree<Key, T, Compare, Allocator>::node_allocator;
 
 #endif
