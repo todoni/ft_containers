@@ -32,4 +32,9 @@ int	main()
 	std::cout << (*it).first << ' ' << (*it).second << std::endl;
 	++it;
 	std::cout << (*it).first << ' ' << (*it).second << std::endl;
+	std::cout << (*--binary_search_tree.end()).first << std::endl;
+	ret = binary_search_tree.insert(std::make_pair(5, 42));
+	std::cout << ret.second << std::endl;
+	binary_search_tree.print();
+	std::cout << (*binary_search_tree.begin()).first << std::endl;
 }

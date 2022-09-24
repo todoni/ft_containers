@@ -95,7 +95,8 @@ public:
 	};
 
 protected:
-	link_type				root;
+	//link_type				root;
+	link_type				header;
 	size_type				node_count;
 	key_compare				comp;
 	static	std::allocator<bst_node>	node_allocator;
@@ -103,20 +104,38 @@ protected:
 	link_type	get_node()
 	{
 		link_type	tmp = node_allocator.allocate(1);
+		tmp->height = 0;
+		tmp->parent = 0;
 		tmp->left = 0;
 		tmp->right = 0;
 		return (tmp);
 	}
-	
+	link_type	minimum(link_type x)
+	{
+		while (x->left != 0)
+			x = x->left;
+		return (x);
+	}
+	link_type&	root() { return (header->parent); }
+	link_type&	leftmost() { return (header->left); }
+	link_type&	rightmost() { return (header->right); }
 
 private:
 	void	init()//tree node init
 	{
-		root = node_allocator.allocate(1);
-		root->height = 0;
-		root->parent = 0;
-		root->left = 0;
-		root->right = 0;
+		header = get_node();
+		root() = header;
+		leftmost() = header;
+		rightmost() = header;
+		
+		/*header->parent = header;
+		header->left = header;
+		header->right = header;*/
+		/*header->parent = root;
+		root = header;
+		root->parent = header;
+		root->left = header;
+		root->right = header;*/
 	}
 	iterator	__insert(link_type x, link_type y, const value_type& v);
 
@@ -144,26 +163,33 @@ public:
 	std::pair<iterator, bool>		insert(const value_type& val)
 	{
 		link_type	x, y;
-		x = root;
-		y = root;
+		x = root();
+		y = header;
 		int		right = 0;
 		bool		_comp = true;
 		++node_count;
-		if (root->parent == 0 && size() == 1)
+		if (root() == header)
 		{
-			root->value_field = val;
-			return (std::make_pair(iterator(root), _comp));
+			root() = get_node();
+			root()->value_field = val;
+			leftmost() = root();
+			rightmost() = root();
+			//header->left = root;
+			return (std::make_pair(iterator(root()), _comp));
 		}
 		while (x != 0)
 		{
 			y = x;
+			if (val.first == x->value_field.first)
+			{
+				x->value_field.second = val.second;
+				return (std::make_pair(iterator(x), false));
+			}
 			_comp = comp(val.first, x->value_field.first);
-			std::cout << "insert key: " << val.first << " compare key: " << x->value_field.first << std::endl;
 			if (_comp == true)
 			{	
 				x = x->left;
 				right = 0;
-				std::cout << "leftchild" << std::endl;
 			}
 			else
 			{	
@@ -178,7 +204,7 @@ public:
 			y->right = x;
 		else
 			y->left = x;
-		return (std::make_pair(iterator(x), _comp));
+		return (std::make_pair(iterator(x), true));
 	}
 	void		erase();
 	void		swap (BinarySearchTree& x);
@@ -189,20 +215,22 @@ public:
 	iterator	lower_bound (const key_type& k);
 	iterator	upper_bound (const key_type& k);
 	std::pair<iterator,iterator>             equal_range (const key_type& k);
+	iterator	end() { return (header); }
+	iterator	begin() { return (minimum(root())); }
 
 	void	inorder(link_type x)
 	{
 		if (x)
 		{
 			inorder(x->left);
-			//std::cout << "[Key: " << x->value_field.first << " Value: " << x->value_field.second << "] ";
-			std::cout << x->value_field.first << ' ';
+			std::cout << "[Key: " << x->value_field.first << " Value: " << x->value_field.second << "] ";
+			//std::cout << x->value_field.first << ' ';
 			inorder(x->right);
 		}
 	}
 	void	print()
 	{
-		link_type x = root;
+		link_type x = root();
 		inorder(x);
 		std::cout << std::endl;
 	}
