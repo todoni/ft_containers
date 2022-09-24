@@ -192,19 +192,18 @@ public:
 	std::pair<iterator, bool>		insert(const value_type& val)
 	{
 		link_type	x, y;
+		bool		_comp = true;
 		x = root();
 		y = header;
-		int		right = 0;
-		bool		_comp = true;
-		++node_count;
 		if (root() == header)
 		{
+			++node_count;
 			root() = get_node();
 			root()->value_field = val;
 			leftmost() = root();
 			rightmost() = root();
 			//header->left = root;
-			return (std::make_pair(iterator(root()), _comp));
+			return (std::make_pair(iterator(root()), true));
 		}
 		while (x != 0)
 		{
@@ -216,20 +215,15 @@ public:
 			}
 			_comp = comp(val.first, x->value_field.first);
 			if (_comp == true)
-			{	
 				x = x->left;
-				right = 0;
-			}
 			else
-			{	
 				x = x->right;
-				right = 1;
-			}
 		}
+		++node_count;
 		x = get_node();
 		x->value_field = val;
 		x->parent = y;
-		if (right)
+		if (!_comp)
 		{	
 			y->right = x;
 			if (y == rightmost())
