@@ -137,7 +137,36 @@ private:
 		root->left = header;
 		root->right = header;*/
 	}
-	iterator	__insert(link_type x, link_type y, const value_type& v);
+	iterator	__insert(link_type x, link_type y, const value_type& v)
+	{
+		++node_count;
+    	link_type z = get_node();
+    	//construct(value_allocator.address(value(z)), v);
+		z->value_field = v;
+			//leftmost() = root();
+			//rightmost() = root();
+    	if (y == header || x != 0 || key_compare(v.first, y->value_field.first))
+		{
+        	y->left = z;  // also makes leftmost() = z when y == header
+        	if (y == header)
+			{
+            	root() = z;
+            	rightmost() = z;
+        	}
+			else if (y == leftmost())
+            	leftmost() = z;   // maintain leftmost() pointing to minimum node
+    	}
+		else
+		{
+        	y->right = z;
+        	if (y == rightmost())
+            	rightmost() = z;   // maintain rightmost() pointing to maximum node
+    	}
+    	z->parent = y;
+    	z->left = 0;
+    	z->right = 0;
+		return (iterator(z));
+	}
 
 public:
 	BinarySearchTree(const Compare& comp = Compare())
@@ -201,9 +230,17 @@ public:
 		x->value_field = val;
 		x->parent = y;
 		if (right)
+		{	
 			y->right = x;
+			if (y == rightmost())
+				rightmost() = x;
+		}
 		else
+		{	
 			y->left = x;
+			if (y == leftmost())
+				leftmost() = x;
+		}
 		return (std::make_pair(iterator(x), true));
 	}
 	void		erase();
@@ -216,7 +253,8 @@ public:
 	iterator	upper_bound (const key_type& k);
 	std::pair<iterator,iterator>             equal_range (const key_type& k);
 	iterator	end() { return (header); }
-	iterator	begin() { return (minimum(root())); }
+	//iterator	begin() { return (minimum(root())); }
+	iterator	begin() { return (leftmost()); }
 
 	void	inorder(link_type x)
 	{

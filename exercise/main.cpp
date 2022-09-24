@@ -37,4 +37,6 @@ int	main()
 	std::cout << ret.second << std::endl;
 	binary_search_tree.print();
 	std::cout << (*binary_search_tree.begin()).first << std::endl;
+	ret = binary_search_tree.insert(std::make_pair(-1, 42));
+	std::cout << (*binary_search_tree.begin()).first << std::endl;
 }
