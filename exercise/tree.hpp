@@ -15,7 +15,7 @@ class	BinarySearchTree
 	typedef Compare								key_compare;
 	typedef Allocator							allocator_type;
 	typedef typename allocator_type::size_type	size_type;
-	typedef typename allocator_type::pointer	pointer;
+	typedef typename std::allocator<value_type>::pointer	pointer;
 	typedef typename std::allocator<value_type>::reference	reference;
 
 protected:
@@ -31,6 +31,7 @@ protected:
 public:
 	typedef typename std::allocator<bst_node>		node_allocator_type;
 	typedef typename node_allocator_type::pointer	link_type;
+
 	class	iterator : public std::iterator<std::bidirectional_iterator_tag, T>
 	{
 		friend class BinarySearchTree;
@@ -38,13 +39,19 @@ public:
 		link_type	node;
 		iterator(link_type x) : node(x) {}
 	public:
+		//typedef typename std::allocator<value_type>::reference	reference;
+		//typedef typename std::allocator<value_type>::pointer	pointer;
 		iterator() {}
 		/*iterator &operator=(const iterator &x)
 		{
     		node = x.node;
     		return (*this);
   		}*/
+		bool operator==(const iterator& y) const { return node == y.node; }
+		bool operator!=(const iterator& y) const { return !operator==(y); }
 		reference operator*() const { return (value(node)); };
+		//reference operator->() const { return (value(node)); };
+		pointer	operator->() const { return &(operator*()); }
 		iterator& operator++()
 		{
 			if (node->right != 0) {
@@ -202,17 +209,17 @@ public:
 			root()->value_field = val;
 			leftmost() = root();
 			rightmost() = root();
-			//header->left = root;
+			root()->parent = header;
 			return (std::make_pair(iterator(root()), true));
 		}
 		while (x != 0)
 		{
 			y = x;
-			if (val.first == x->value_field.first)
+			/*if (val.first == x->value_field.first)
 			{
 				x->value_field.second = val.second;
 				return (std::make_pair(iterator(x), false));
-			}
+			}*/
 			_comp = comp(val.first, x->value_field.first);
 			if (_comp == true)
 				x = x->left;
