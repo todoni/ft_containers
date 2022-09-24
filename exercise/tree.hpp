@@ -144,7 +144,7 @@ private:
 		z->value_field = v;
 			//leftmost() = root();
 			//rightmost() = root();
-    	if (y == header || x != 0 || key_compare(v.first, y->value_field.first))
+    	if (y == header || x != 0 || comp(v.first, y->value_field.first))
 		{
         	y->left = z;  // also makes leftmost() = z when y == header
         	if (y == header)
@@ -197,18 +197,24 @@ public:
 		while (x != 0)
 		{
 			y = x;
-			/*if (val.first == x->value_field.first)
-			{
-				x->value_field.second = val.second;
-				return (std::make_pair(iterator(x), false));
-			}*/
 			_comp = comp(val.first, x->value_field.first);
 			if (_comp == true)
 				x = x->left;
 			else
 				x = x->right;
 		}
-		++node_count;
+		iterator j = iterator(y);   
+    	if (_comp)
+       	{
+			if (j == begin())     
+            	return std::pair<iterator, bool>(__insert(x, y, val), true);
+        	else
+            	--j;
+		}
+    	if (comp(j.node->value_field.first, val.first))
+        	return std::pair<iterator, bool>(__insert(x, y, val), true);
+		return (std::pair<iterator, bool>(j, false));
+		/*++node_count;
 		x = get_node();
 		x->value_field = val;
 		x->parent = y;
@@ -223,8 +229,9 @@ public:
 			y->left = x;
 			if (y == leftmost())
 				leftmost() = x;
-		}
-		return (std::make_pair(iterator(x), true));
+		}*/
+		//return (std::make_pair(iterator(x), true));
+		//return (std::pair<iterator, bool>(iterator(x), true));
 	}
 	void		erase();
 	void		swap (BinarySearchTree& x);

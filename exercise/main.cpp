@@ -30,9 +30,12 @@ int	main()
 	binary_search_tree.print();
 	ret = binary_search_tree.insert(std::make_pair(3, 42));
 	binary_search_tree.print();
+	tmp = *ret.first;
 	std::cout << "size: " << binary_search_tree.size() << std::endl;
+	std::cout << tmp.first << " " << tmp.second << std::endl;
 
 	BinarySearchTree<int, int>::iterator it;
+	std::cout << "=========================" << std::endl;
 	it = ret.first;
 	--it;
 	std::cout << (*it).first << ' ' << (*it).second << std::endl;
