@@ -131,18 +131,10 @@ private:
 	void	init()//tree node init
 	{
 		header = get_node();
-		root() = header;
-		leftmost() = header;
-		rightmost() = header;
-		
-		/*header->parent = header;
-		header->left = header;
-		header->right = header;*/
-		/*header->parent = root;
-		root = header;
-		root->parent = header;
-		root->left = header;
-		root->right = header;*/
+		root() = get_node();
+		leftmost() = root();
+		rightmost() = root();
+		root()->parent = header;
 	}
 	iterator	__insert(link_type x, link_type y, const value_type& v)
 	{
@@ -202,16 +194,6 @@ public:
 		bool		_comp = true;
 		x = root();
 		y = header;
-		if (root() == header)
-		{
-			++node_count;
-			root() = get_node();
-			root()->value_field = val;
-			leftmost() = root();
-			rightmost() = root();
-			root()->parent = header;
-			return (std::make_pair(iterator(root()), true));
-		}
 		while (x != 0)
 		{
 			y = x;
