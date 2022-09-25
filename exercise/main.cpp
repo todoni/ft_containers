@@ -55,5 +55,35 @@ int	main()
 	std::cout << "size: " << binary_search_tree.size() << std::endl;
 	for (BinarySearchTree<int, int>::iterator itt = binary_search_tree.begin(); itt != binary_search_tree.end(); ++itt)
 		std::cout << "[key:"<<	itt->first << " value:" << itt->second << "] " << std::endl;
-		
+	
+	BinarySearchTree<char,int> mymap;
+
+  // first insert function version (single parameter):
+  	mymap.insert ( std::pair<char,int>('a',100) );
+  	mymap.insert ( std::pair<char,int>('z',200) );
+
+  	std::pair<BinarySearchTree<char,int>::iterator,bool> rett;
+  	rett = mymap.insert ( std::pair<char,int>('z',500) );
+  	if (rett.second==false) {
+    	std::cout << "element 'z' already existed";
+    	std::cout << " with a value of " << rett.first->second << '\n';
+  	}	
+	// second insert function version (with hint position):
+  	BinarySearchTree<char,int>::iterator itt = mymap.begin();
+  	mymap.insert (itt, std::pair<char,int>('b',300));  // max efficiency inserting
+  	mymap.insert (itt, std::pair<char,int>('c',400));  // no max efficiency inserting
+	
+	// third insert function version (range insertion):
+	BinarySearchTree<char,int> anothermap;
+  	anothermap.insert(mymap.begin(),mymap.find('c'));
+
+  	// showing contents:
+  	std::cout << "mymap contains:\n";
+  	for (itt=mymap.begin(); itt!=mymap.end(); ++itt)
+    	std::cout << itt->first << " => " << itt->second << '\n';
+
+  	std::cout << "anothermap contains:\n";
+  	for (itt=anothermap.begin(); itt!=anothermap.end(); ++itt)
+    	std::cout << itt->first << " => " << itt->second << '\n';
+
 }

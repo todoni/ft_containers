@@ -142,8 +142,6 @@ private:
     	link_type z = get_node();
     	//construct(value_allocator.address(value(z)), v);
 		z->value_field = v;
-			//leftmost() = root();
-			//rightmost() = root();
     	if (y == header || x != 0 || comp(v.first, y->value_field.first))
 		{
         	y->left = z;  // also makes leftmost() = z when y == header
@@ -214,30 +212,69 @@ public:
     	if (comp(j.node->value_field.first, val.first))
         	return std::pair<iterator, bool>(__insert(x, y, val), true);
 		return (std::pair<iterator, bool>(j, false));
-		/*++node_count;
-		x = get_node();
-		x->value_field = val;
-		x->parent = y;
-		if (!_comp)
-		{	
-			y->right = x;
-			if (y == rightmost())
-				rightmost() = x;
-		}
-		else
-		{	
-			y->left = x;
-			if (y == leftmost())
-				leftmost() = x;
-		}*/
-		//return (std::make_pair(iterator(x), true));
-		//return (std::pair<iterator, bool>(iterator(x), true));
 	}
+
+	iterator insert (iterator position, const value_type& val)
+	{
+		
+		if (position == iterator(begin()))
+		{
+			if (size() > 0 && comp(val.first, position.node->value_field.first))
+            	return __insert(position.node, position.node, val);
+            // first argument just needs to be non-NIL 
+        	else
+            	return insert(val).first;
+		}
+    	else if (position == iterator(end()))
+		{
+			if (comp(rightmost()->value_field.first, val.first))
+            	return __insert(0, rightmost(), val);
+        	else
+            	return insert(val).first;
+		}
+    	else
+		{
+        	iterator before = --position;
+        	if (comp(before.node->value_field.first, val.first)
+            	&& comp(val.first, position.node->value_field.first))
+			{
+				if (before.node->right == 0)
+                	return __insert(0, before.node, val); 
+            	else
+                	return __insert(position.node, position.node, val);
+			}
+                // first argument just needs to be non-NIL 
+        	else
+            	return insert(val).first;
+    	}
+	}
+
+	template <class InputIterator>
+	void	insert(InputIterator first, InputIterator last)
+	{
+		while (first != last)
+			insert(*first++);
+	}
+
 	void		erase();
 	void		swap (BinarySearchTree& x);
 	void		clear();
 
-	iterator 	find (const key_type& k);
+	iterator 	find (const key_type& k)
+	{
+		link_type y = header; /* Last node which is not less than k. */
+   		link_type x = root(); /* Current node. */
+
+   		while (x != 0) 
+		{	
+			if (!comp(x->value_field.first, k))
+       			y = x, x = x->left;
+   			else
+       			x = x->right;
+		}
+   		iterator j = iterator(y);   
+   		return (j == end() || comp(k, j.node->value_field.first)) ? end() : j;
+	}
 	size_type	count (const key_type& k) const;
 	iterator	lower_bound (const key_type& k);
 	iterator	upper_bound (const key_type& k);
