@@ -192,7 +192,7 @@ public:
 		bool		_comp = true;
 		x = root();
 		y = header;
-		while (x != 0)
+		while (x != 0 && size() != 0)
 		{
 			y = x;
 			_comp = comp(val.first, x->value_field.first);
