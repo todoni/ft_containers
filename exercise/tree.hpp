@@ -5,8 +5,9 @@
 # include <iostream>
 # include <iterator>
 # include <utility>
+# include "ft_function.hpp"
 
-template <class Key, class T, class Compare = std::less<Key>, class Allocator = std::allocator<T> >
+template <class Key, class T, class KeyOfValue, class Compare = std::less<Key>, class Allocator = std::allocator<T> >
 class	BinarySearchTree
 {
 	typedef Key									key_type;
@@ -15,8 +16,13 @@ class	BinarySearchTree
 	typedef Compare								key_compare;
 	typedef Allocator							allocator_type;
 	typedef typename allocator_type::size_type	size_type;
-	typedef typename std::allocator<value_type>::pointer	pointer;
-	typedef typename std::allocator<value_type>::reference	reference;
+	//typedef typename std::allocator<value_type>::pointer	pointer;
+	//typedef typename std::allocator<value_type>::reference	reference;
+	typedef typename allocator_type::template rebind<value_type>::other	value_allocator_type;
+	typedef typename value_allocator_type::pointer		pointer;
+	typedef typename value_allocator_type::reference	reference;
+	//typedef typename allocator_type::template rebind<value_type>::other::pointer pointer;
+	//typedef typename allocator_type::template rebind<value_type>::other::reference reference;
 
 protected:
 	struct	bst_node
@@ -29,7 +35,8 @@ protected:
 	};
 	
 public:
-	typedef typename std::allocator<bst_node>		node_allocator_type;
+	//typedef typename std::allocator<bst_node>		node_allocator_type;
+	typedef typename allocator_type::template rebind<bst_node>::other	node_allocator_type;
 	typedef typename node_allocator_type::pointer	link_type;
 
 	class	iterator : public std::iterator<std::bidirectional_iterator_tag, T>
@@ -106,8 +113,10 @@ protected:
 	link_type				header;
 	size_type				node_count;
 	key_compare				comp;
-	static	std::allocator<bst_node>	node_allocator;
+	//static	std::allocator<bst_node>	node_allocator;
+	static node_allocator_type	node_allocator;
 	static reference value(link_type x) { return (*x).value_field; }
+	static key_type& key(const link_type x) { return  KeyOfValue()(value(x)); }
 	link_type	get_node()
 	{
 		link_type	tmp = node_allocator.allocate(1);
@@ -142,7 +151,7 @@ private:
     	link_type z = get_node();
     	//construct(value_allocator.address(value(z)), v);
 		z->value_field = v;
-    	if (y == header || x != 0 || comp(v.first, y->value_field.first))
+    	if (y == header || x != 0 || comp(KeyOfValue()(v), key(y)))
 		{
         	y->left = z;  // also makes leftmost() = z when y == header
         	if (y == header)
@@ -195,7 +204,7 @@ public:
 		while (x != 0 && size() != 0)
 		{
 			y = x;
-			_comp = comp(val.first, x->value_field.first);
+			_comp = comp(KeyOfValue()(val), key(x));
 			if (_comp == true)
 				x = x->left;
 			else
@@ -209,7 +218,7 @@ public:
         	else
             	--j;
 		}
-    	if (comp(j.node->value_field.first, val.first))
+    	if (comp(key(j.node), KeyOfValue()(val)))
         	return std::pair<iterator, bool>(__insert(x, y, val), true);
 		return (std::pair<iterator, bool>(j, false));
 	}
@@ -219,7 +228,7 @@ public:
 		
 		if (position == iterator(begin()))
 		{
-			if (size() > 0 && comp(val.first, position.node->value_field.first))
+			if (size() > 0 && comp(KeyOfValue()(val), key(position.node)))
             	return __insert(position.node, position.node, val);
             // first argument just needs to be non-NIL 
         	else
@@ -227,7 +236,7 @@ public:
 		}
     	else if (position == iterator(end()))
 		{
-			if (comp(rightmost()->value_field.first, val.first))
+			if (comp(key(rightmost()), KeyOfValue()(val)))
             	return __insert(0, rightmost(), val);
         	else
             	return insert(val).first;
@@ -235,8 +244,8 @@ public:
     	else
 		{
         	iterator before = --position;
-        	if (comp(before.node->value_field.first, val.first)
-            	&& comp(val.first, position.node->value_field.first))
+        	if (comp(key(before.node), KeyOfValue()(val))
+            	&& comp(KeyOfValue()(val), key(position.node)))
 			{
 				if (before.node->right == 0)
                 	return __insert(0, before.node, val); 
@@ -267,18 +276,19 @@ public:
 
    		while (x != 0) 
 		{	
-			if (!comp(x->value_field.first, k))
+			if (!comp(key(x), k))
        			y = x, x = x->left;
    			else
        			x = x->right;
 		}
    		iterator j = iterator(y);   
-   		return (j == end() || comp(k, j.node->value_field.first)) ? end() : j;
+   		return (j == end() || comp(k, key(j.node))) ? end() : j;
 	}
 	size_type	count (const key_type& k) const;
 	iterator	lower_bound (const key_type& k);
 	iterator	upper_bound (const key_type& k);
 	std::pair<iterator,iterator>             equal_range (const key_type& k);
+	key_compare key_comp() const;
 	iterator	end() { return (header); }
 	//iterator	begin() { return (minimum(root())); }
 	iterator	begin() { return (leftmost()); }
@@ -288,8 +298,8 @@ public:
 		if (x)
 		{
 			inorder(x->left);
-			std::cout << "[Key: " << x->value_field.first << " Value: " << x->value_field.second << "] ";
-			//std::cout << x->value_field.first << ' ';
+			std::cout << "[Key: " << key(x) << " Value: " << x->value_field.second << "] ";
+			//std::cout << key(x) << ' ';
 			inorder(x->right);
 		}
 	}
@@ -304,7 +314,7 @@ public:
 
 };
 
-template <class Key, class T, class Compare, class Allocator>
-typename BinarySearchTree<Key, T, Compare, Allocator>::node_allocator_type BinarySearchTree<Key, T, Compare, Allocator>::node_allocator;
+template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
+typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::node_allocator_type BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::node_allocator;
 
 #endif
