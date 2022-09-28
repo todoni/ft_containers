@@ -61,8 +61,11 @@ int	main()
 
   // first insert function version (single parameter):
   	mymap.insert ( std::pair<char,int>('a',100) );
-  	mymap.insert ( std::pair<char,int>('z',200) );
+  	mymap.printBT(mymap.root);
 
+	mymap.insert ( std::pair<char,int>('z',200) );
+
+	mymap.printBT(mymap.root);
   	std::pair<BinarySearchTree<char, int, select1st<std::pair<char, int> > >::iterator,bool> rett;
   	rett = mymap.insert ( std::pair<char,int>('z',500) );
   	if (rett.second==false) {
@@ -83,6 +86,8 @@ int	main()
   	for (itt=mymap.begin(); itt!=mymap.end(); ++itt)
     	std::cout << itt->first << " => " << itt->second << '\n';
 
+	mymap.printBT(mymap.root);
+	//mymap.print_ascii_tree(mymap.header);
   	std::cout << "anothermap contains:\n";
   	for (itt=anothermap.begin(); itt!=anothermap.end(); ++itt)
     	std::cout << itt->first << " => " << itt->second << '\n';
@@ -90,5 +95,14 @@ int	main()
 	itt = mymap.begin();
 	mymap.erase(itt);
 	mymap.printBT(mymap.root);
+	itt = mymap.begin();
+	mymap.erase(itt);
+  	std::cout << "mymap contains:\n";
+	for (itt=mymap.begin(); itt!=mymap.end(); ++itt)
+    	std::cout << itt->first << " => " << itt->second << '\n';
+	std::cout << mymap.size() << std::endl;
+
+	mymap.printBT(mymap.root);
+
 
 }

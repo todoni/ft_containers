@@ -31,7 +31,13 @@ protected:
 		bst_node	*parent;
 		bst_node	*left;
 		bst_node	*right;
-		value_type	value_field;	
+		value_type	value_field;
+
+		/*print*/
+		int	edge_length;
+		int	lablen;
+		int	parent_dir;
+		char	label[11];
 	};
 	
 public:
@@ -114,10 +120,12 @@ public:
 
 
 protected:
+	link_type				NIL;
 	size_type				node_count;
 	key_compare				comp;
 	//static	std::allocator<bst_node>	node_allocator;
 	static node_allocator_type	node_allocator;
+	static value_allocator_type	value_allocator;
 	static reference value(link_type x) { return (*x).value_field; }
 	static key_type& key(const link_type x) { return  KeyOfValue()(value(x)); }
 	link_type	get_node()
@@ -229,6 +237,11 @@ private:
 		leftmost() = header;
 		rightmost() = header;
 		header->left = root;
+		//root = get_node();
+		/*root = header;
+		leftmost() = header;
+		rightmost() = header;*/
+		//root->parent = header;
 	}
 	
 	iterator	__insert(link_type x, link_type y, const value_type& v)
@@ -262,7 +275,16 @@ private:
 		set_height(root);
 		return (iterator(z));
 	}
-
+	void	__erase(link_type x)
+	{
+		while (x != 0)
+		{
+			__erase(x->right);
+			link_type y = x->left;
+			value_allocator.destroy(value(x));
+			x = y;
+		}
+	}
 public:
 	BinarySearchTree(const Compare& comp = Compare())
 		:node_count(0), comp(comp)
@@ -354,7 +376,85 @@ public:
 			insert(*first++);
 	}
 
-	void		erase(iterator position);
+	void		erase(iterator position)
+	{
+		link_type z = position.node;
+		link_type y = z;
+		link_type x;
+		
+		if (y->left == 0)
+		{
+			x = y->right;
+		}
+		else
+		{   
+			if (y->right == 0) 
+		        x = y->left;
+		    else 
+			{
+		        y = y->right;
+		        while (y->left != 0)
+		            y = y->left;
+		        x = y->right;
+		    }
+		}
+		if (y != z)
+		{ // relink y in place of z
+		    z->left->parent = y; 
+		    y->left = z->left;
+		    if (y != z->right)
+			{
+		        x->parent = y->parent; // possibly x == 0
+		        y->parent->left = x;   // y must be a left child
+		        y->right = z->right;
+		        z->right->parent = y;
+		    }
+			else
+				x->parent = y;  // needed in case x == 0
+		    if (header == z)
+		        header = y;
+		    else if (z->parent->left == z)
+		        z->parent->left = y;
+		    else 
+		        z->parent->right = y;
+		    y->parent = z->parent;
+		    //std::swap(color(y), color(z));
+		    y = z;                  // y points to node to be actually deleted
+		}
+		else
+		{  // y == z
+		    x->parent = y->parent;   // possibly x == 0
+		    if (header == z)
+		        header = x;
+		    else 
+			{
+				if (z->parent->left == z)
+		            z->parent->left = x;
+		        else
+		            z->parent->right = x;
+			}
+			if (leftmost() == z) 
+			{
+				if (z->right == 0)  // z->left must be 0 also
+					leftmost() = z->parent;
+			}       // makes leftmost() == header if z == root
+		    else
+		        leftmost() = minimum(x);
+		    if (rightmost() == z)  
+			{
+				if (z->left == 0) // z->right must be 0 also
+					rightmost() = z->parent;  
+			}       // makes rightmost() == header if z == root
+		    else  // x == z->left
+		        rightmost() = maximum(x);
+		}
+		x = balance(root);
+		set_height(root);
+		value_allocator.destroy(value_allocator.address(value(x)));
+		node_allocator.destroy(x);
+		//node_allocator.deallocate(y, 1);
+		--node_count;
+	}
 	size_type	erase(const key_type& k);
 	void		erase(iterator first, iterator last);
 	void		swap (BinarySearchTree& x);
@@ -423,9 +523,13 @@ public:
 	{
     	printBT("", node, false);    
 	}
+	
 };
 
 template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
 typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::node_allocator_type BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::node_allocator;
+
+template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
+typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::value_allocator_type BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::value_allocator;
 
 #endif
