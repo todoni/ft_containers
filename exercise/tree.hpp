@@ -108,9 +108,12 @@ public:
 
 	};
 
-protected:
-	//link_type				root;
+public:
+		link_type				root;
 	link_type				header;
+
+
+protected:
 	size_type				node_count;
 	key_compare				comp;
 	//static	std::allocator<bst_node>	node_allocator;
@@ -130,6 +133,12 @@ protected:
 	{
 		while (x->left != 0)
 			x = x->left;
+		return (x);
+	}
+	link_type	maximum(link_type x)
+	{
+		while (x->right != 0)
+			x = x->right;
 		return (x);
 	}
 	size_type	height(link_type& node)
@@ -208,7 +217,7 @@ protected:
         return RR_Rotation(parent);
     }
 
-	link_type&	root() { return (header->parent); }
+	//link_type&	root { return (header->parent); }
 	link_type&	leftmost() { return (header->left); }
 	link_type&	rightmost() { return (header->right); }
 
@@ -216,10 +225,10 @@ private:
 	void	init()//tree node init
 	{
 		header = get_node();
-		root() = get_node();
-		leftmost() = root();
-		rightmost() = root();
-		root()->parent = header;
+		root = header;
+		leftmost() = header;
+		rightmost() = header;
+		header->left = root;
 	}
 	
 	iterator	__insert(link_type x, link_type y, const value_type& v)
@@ -233,7 +242,7 @@ private:
         	y->left = z;  // also makes leftmost() = z when y == header
         	if (y == header)
 			{
-            	root() = z;
+            	root = z;
             	rightmost() = z;
         	}
 			else if (y == leftmost())
@@ -249,8 +258,8 @@ private:
     	z->left = 0;
     	z->right = 0;
 		x = z;
-		x = balance(header);
-		set_height(header);
+		x = balance(root);
+		set_height(root);
 		return (iterator(z));
 	}
 
@@ -279,7 +288,7 @@ public:
 	{
 		link_type	x, y;
 		bool		_comp = true;
-		x = root();
+		x = root;
 		y = header;
 		while (x != 0 && size() != 0)
 		{
@@ -354,7 +363,7 @@ public:
 	iterator 	find (const key_type& k)
 	{
 		link_type y = header; /* Last node which is not less than k. */
-   		link_type x = root(); /* Current node. */
+   		link_type x = root; /* Current node. */
 
    		while (x != 0) 
 		{	
@@ -372,7 +381,7 @@ public:
 	std::pair<iterator,iterator>             equal_range (const key_type& k);
 	key_compare key_comp() const;
 	iterator	end() { return (header); }
-	//iterator	begin() { return (minimum(root())); }
+	//iterator	begin() { return (minimum(root)); }
 	iterator	begin() { return (leftmost()); }
 
 	void	inorder(link_type x)
@@ -387,13 +396,33 @@ public:
 	}
 	void	print()
 	{
-		link_type x = root();
+		link_type x = root;
 		inorder(x);
 		std::cout << std::endl;
 	}
 
 	//const_iterator find (const key_type& k) const;
+	void printBT(const std::string& prefix, const link_type node, bool isLeft)
+	{
+    	if( node != 0 )
+    	{
+        	std::cout << prefix;
 
+        	std::cout << (isLeft ? "├──" : "└──" );
+
+        // print the value of the node
+        	std::cout << key(node) << std::endl;
+
+        // enter the next tree level - left and right branch
+        	printBT( prefix + (isLeft ? "│   " : "    "), node->left, true);
+        	printBT( prefix + (isLeft ? "│   " : "    "), node->right, false);
+    	}
+	}
+
+	void printBT(const link_type node)
+	{
+    	printBT("", node, false);    
+	}
 };
 
 template <class Key, class T, class KeyOfValue, class Compare, class Allocator>

@@ -86,5 +86,9 @@ int	main()
   	std::cout << "anothermap contains:\n";
   	for (itt=anothermap.begin(); itt!=anothermap.end(); ++itt)
     	std::cout << itt->first << " => " << itt->second << '\n';
+	mymap.printBT(mymap.root);
+	itt = mymap.begin();
+	mymap.erase(itt);
+	mymap.printBT(mymap.root);
 
 }
