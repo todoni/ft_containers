@@ -5,7 +5,7 @@
 # include <iostream>
 # include <iterator>
 # include <utility>
-# include "ft_function.hpp"
+# include "ft_functional.hpp"
 
 template <class Key, class T, class KeyOfValue, class Compare = std::less<Key>, class Allocator = std::allocator<T> >
 class	BinarySearchTree
@@ -27,7 +27,7 @@ class	BinarySearchTree
 protected:
 	struct	bst_node
 	{
-		int			height;
+		size_type	height;
 		bst_node	*parent;
 		bst_node	*left;
 		bst_node	*right;
@@ -132,6 +132,82 @@ protected:
 			x = x->left;
 		return (x);
 	}
+	size_type	height(link_type& node)
+    {
+        if(node == NULL)
+            return -1;
+        else
+            return std::max(height(node->left), height(node->right)) + 1;
+    }
+	size_type	get_balance_factor(link_type& node)
+	{
+		return (height(node->left) - height(node->right));
+	}
+	void		set_height(link_type& node)
+	{
+		if(node != NULL)
+        {
+            set_height(node->left);
+            set_height(node->right);
+            node->height = height(node);
+        }
+	}
+	
+	link_type balance(link_type& node)
+    {
+        //bf is Called Balance Factor
+        int	bf = get_balance_factor(node);
+        
+        //If Left Subtree Violates AVL Property
+        if(bf > 1)
+        {    
+            if(get_balance_factor(node->left) > 0)
+                node = LL_Rotation(node);
+            else
+                node = LR_Rotation(node);
+        }
+        //If Right Subtree Violates AVL Property
+        else if(bf < -1)
+        {
+            if(get_balance_factor(node->right) < 0)
+                node = RR_Rotation(node);
+            else
+                node = RL_Rotation(node);
+        }
+        
+        return node;
+    }
+
+    link_type LL_Rotation(link_type& parent)
+    {
+        link_type node = parent->left;
+        parent->left = node->right;
+        node->right = parent;
+        return node;
+    }
+ 
+    link_type RR_Rotation(link_type& parent)
+    {
+        link_type node = parent->right;
+        parent->right = node->left;
+        node->left = parent;
+        return node;
+    }
+ 
+    link_type LR_Rotation(link_type& parent)
+    {
+        link_type leftNode = parent->left;
+        parent->left = RR_Rotation(leftNode);
+        return LL_Rotation(parent);
+    }
+ 
+    link_type RL_Rotation(link_type& parent)
+    {
+        link_type rightNode = parent->right;
+        parent->right = LL_Rotation(rightNode);
+        return RR_Rotation(parent);
+    }
+
 	link_type&	root() { return (header->parent); }
 	link_type&	leftmost() { return (header->left); }
 	link_type&	rightmost() { return (header->right); }
@@ -145,6 +221,7 @@ private:
 		rightmost() = root();
 		root()->parent = header;
 	}
+	
 	iterator	__insert(link_type x, link_type y, const value_type& v)
 	{
 		++node_count;
@@ -171,6 +248,9 @@ private:
     	z->parent = y;
     	z->left = 0;
     	z->right = 0;
+		x = z;
+		x = balance(header);
+		set_height(header);
 		return (iterator(z));
 	}
 
@@ -265,7 +345,9 @@ public:
 			insert(*first++);
 	}
 
-	void		erase();
+	void		erase(iterator position);
+	size_type	erase(const key_type& k);
+	void		erase(iterator first, iterator last);
 	void		swap (BinarySearchTree& x);
 	void		clear();
 

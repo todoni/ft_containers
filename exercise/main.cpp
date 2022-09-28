@@ -1,7 +1,7 @@
 #include "tree.hpp"
 #include <iostream>
 #include <utility>
-#include "ft_function.hpp"
+#include "ft_functional.hpp"
 
 int	main()
 {
