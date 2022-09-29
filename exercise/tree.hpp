@@ -114,28 +114,44 @@ public:
 
 	};
 
-public:
-		link_type				root;
-	link_type				header;
-
-
 protected:
+	//link_type				root();
+	link_type				header;
 	link_type				NIL;
+	static link_type	free_list;
+	static link_type 	next_avail;
+	static link_type 	last;
 	size_type				node_count;
 	key_compare				comp;
 	//static	std::allocator<bst_node>	node_allocator;
+	typedef node_allocator_type buffer_allocator_type;
+	typedef pointer	buffer_pointer;
 	static node_allocator_type	node_allocator;
 	static value_allocator_type	value_allocator;
+	buffer_allocator_type	buffer_allocator;
+	static buffer_pointer buffer_list;
 	static reference value(link_type x) { return (*x).value_field; }
 	static key_type& key(const link_type x) { return  KeyOfValue()(value(x)); }
+	size_type buffer_size() {
+        return node_allocator.max_size();
+    }
+	void add_new_buffer() {
+        buffer_pointer tmp = buffer_allocator.allocate((size_type)1);
+        tmp->buffer = node_allocator.allocate(buffer_size());
+        tmp->next_buffer = buffer_list;
+        buffer_list = tmp;
+        next_avail = buffer_list->buffer;
+        last = next_avail + buffer_size();
+    }
 	link_type	get_node()
 	{
 		link_type	tmp = node_allocator.allocate(1);
 		tmp->height = 0;
-		tmp->parent = 0;
-		tmp->left = 0;
-		tmp->right = 0;
-		return (tmp);
+		tmp->parent = NIL;
+		tmp->left = NIL;
+		tmp->right = NIL;
+
+        return (tmp);
 	}
 	link_type	minimum(link_type x)
 	{
@@ -149,7 +165,7 @@ protected:
 			x = x->right;
 		return (x);
 	}
-	size_type	height(link_type& node)
+	size_type	height(const link_type& node)
     {
         if(node == NULL)
             return -1;
@@ -225,23 +241,30 @@ protected:
         return RR_Rotation(parent);
     }
 
-	//link_type&	root { return (header->parent); }
+	link_type&	root() { return (header->parent); }
 	link_type&	leftmost() { return (header->left); }
 	link_type&	rightmost() { return (header->right); }
 
 private:
 	void	init()//tree node init
 	{
+		if (NIL == 0) {
+            NIL = get_node();
+            //color(NIL) = black;
+            NIL->parent = 0;
+            NIL->left = 0;
+            NIL->right = 0;
+        }
 		header = get_node();
-		root = header;
+		root() = NIL;
 		leftmost() = header;
 		rightmost() = header;
-		header->left = root;
-		//root = get_node();
-		/*root = header;
+		//header->left = root();
+		//root() = get_node();
+		/*root() = header;
 		leftmost() = header;
 		rightmost() = header;*/
-		//root->parent = header;
+		//root()->parent = header;
 	}
 	
 	iterator	__insert(link_type x, link_type y, const value_type& v)
@@ -250,12 +273,12 @@ private:
     	link_type z = get_node();
     	//construct(value_allocator.address(value(z)), v);
 		z->value_field = v;
-    	if (y == header || x != 0 || comp(KeyOfValue()(v), key(y)))
+    	if (y == header || x != NIL || comp(KeyOfValue()(v), key(y)))
 		{
         	y->left = z;  // also makes leftmost() = z when y == header
         	if (y == header)
 			{
-            	root = z;
+            	root() = z;
             	rightmost() = z;
         	}
 			else if (y == leftmost())
@@ -268,16 +291,18 @@ private:
             	rightmost() = z;   // maintain rightmost() pointing to maximum node
     	}
     	z->parent = y;
-    	z->left = 0;
-    	z->right = 0;
-		x = z;
-		x = balance(root);
-		set_height(root);
+    	z->left = NIL;
+    	z->right = NIL;
+		z->height = height(y);
+		std::cout << "height: " << z->height << std::endl;
+		//x = z;
+		//x = balance(x);
+		//set_height(x);
 		return (iterator(z));
 	}
 	void	__erase(link_type x)
 	{
-		while (x != 0)
+		while (x != NIL)
 		{
 			__erase(x->right);
 			link_type y = x->left;
@@ -310,9 +335,9 @@ public:
 	{
 		link_type	x, y;
 		bool		_comp = true;
-		x = root;
+		x = root();
 		y = header;
-		while (x != 0 && size() != 0)
+		while (x != NIL)
 		{
 			y = x;
 			_comp = comp(KeyOfValue()(val), key(x));
@@ -348,7 +373,7 @@ public:
     	else if (position == iterator(end()))
 		{
 			if (comp(key(rightmost()), KeyOfValue()(val)))
-            	return __insert(0, rightmost(), val);
+            	return __insert(NIL, rightmost(), val);
         	else
             	return insert(val).first;
 		}
@@ -358,8 +383,8 @@ public:
         	if (comp(key(before.node), KeyOfValue()(val))
             	&& comp(KeyOfValue()(val), key(position.node)))
 			{
-				if (before.node->right == 0)
-                	return __insert(0, before.node, val); 
+				if (before.node->right == NIL)
+                	return __insert(NIL, before.node, val); 
             	else
                 	return __insert(position.node, position.node, val);
 			}
@@ -382,18 +407,18 @@ public:
 		link_type y = z;
 		link_type x;
 		
-		if (y->left == 0)
+		if (y->left == NIL)
 		{
 			x = y->right;
 		}
 		else
 		{   
-			if (y->right == 0) 
+			if (y->right == NIL) 
 		        x = y->left;
 		    else 
 			{
 		        y = y->right;
-		        while (y->left != 0)
+		        while (y->left != NIL)
 		            y = y->left;
 		        x = y->right;
 		    }
@@ -435,21 +460,21 @@ public:
 			}
 			if (leftmost() == z) 
 			{
-				if (z->right == 0)  // z->left must be 0 also
+				if (z->right == NIL)  // z->left must be 0 also
 					leftmost() = z->parent;
-			}       // makes leftmost() == header if z == root
+			}       // makes leftmost() == header if z == root()
 		    else
 		        leftmost() = minimum(x);
 		    if (rightmost() == z)  
 			{
-				if (z->left == 0) // z->right must be 0 also
+				if (z->left == NIL) // z->right must be 0 also
 					rightmost() = z->parent;  
-			}       // makes rightmost() == header if z == root
+			}       // makes rightmost() == header if z == root()
 		    else  // x == z->left
 		        rightmost() = maximum(x);
 		}
-		x = balance(root);
-		set_height(root);
+		x = balance(root());
+		set_height(root());
 		value_allocator.destroy(value_allocator.address(value(x)));
 		node_allocator.destroy(x);
 		//node_allocator.deallocate(y, 1);
@@ -463,9 +488,9 @@ public:
 	iterator 	find (const key_type& k)
 	{
 		link_type y = header; /* Last node which is not less than k. */
-   		link_type x = root; /* Current node. */
+   		link_type x = root(); /* Current node. */
 
-   		while (x != 0) 
+   		while (x != NIL) 
 		{	
 			if (!comp(key(x), k))
        			y = x, x = x->left;
@@ -481,7 +506,7 @@ public:
 	std::pair<iterator,iterator>             equal_range (const key_type& k);
 	key_compare key_comp() const;
 	iterator	end() { return (header); }
-	//iterator	begin() { return (minimum(root)); }
+	//iterator	begin() { return (minimum(root())); }
 	iterator	begin() { return (leftmost()); }
 
 	void	inorder(link_type x)
@@ -496,7 +521,7 @@ public:
 	}
 	void	print()
 	{
-		link_type x = root;
+		link_type x = root();
 		inorder(x);
 		std::cout << std::endl;
 	}
@@ -511,7 +536,7 @@ public:
         	std::cout << (isLeft ? "├──" : "└──" );
 
         // print the value of the node
-        	std::cout << key(node) << std::endl;
+        	std::cout << key(node) << " " << height(node) << std::endl;
 
         // enter the next tree level - left and right branch
         	printBT( prefix + (isLeft ? "│   " : "    "), node->left, true);
@@ -522,6 +547,11 @@ public:
 	void printBT(const link_type node)
 	{
     	printBT("", node, false);    
+	}
+
+	void printBT(void)
+	{
+		printBT(root());
 	}
 	
 };

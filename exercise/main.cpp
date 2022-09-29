@@ -10,10 +10,12 @@ int	main()
 
 	std::cout << binary_search_tree.empty() << std::endl;
 	ret = binary_search_tree.insert(std::pair<int, int>(1, 2));
+	binary_search_tree.printBT();
 	std::pair <int, int> tmp = *ret.first;
 	std::cout << tmp.first << " " << tmp.second << std::endl;
 	//binary_search_tree.print();
 	ret = binary_search_tree.insert(std::make_pair(5, 2));
+
 	tmp = *ret.first;
 	std::cout << tmp.first << " " << tmp.second << std::endl;
 	//binary_search_tree.print();
@@ -22,8 +24,9 @@ int	main()
 	std::cout << "size: " << binary_search_tree.size() << std::endl;
 	std::cout << "first value:" << (*binary_search_tree.begin()).first << std::endl;
 	std::cout << "last  value: "<< (*--binary_search_tree.end()).first << std::endl;
-	for (BinarySearchTree<int, int, select1st<std::pair<int, int> > >::iterator itt = binary_search_tree.begin(); itt != binary_search_tree.end(); ++itt)
-		std::cout << "[key:"<<	itt->first << " value:" << itt->second << "] " << std::endl;
+	binary_search_tree.printBT();
+	//for (BinarySearchTree<int, int, select1st<std::pair<int, int> > >::iterator itt = binary_search_tree.begin(); itt != binary_search_tree.end(); ++itt)
+	//	std::cout << "[key:"<<	itt->first << " value:" << itt->second << "] " << std::endl;
 
 	//std::pair<int, int> tmp;
 	tmp = *ret.first;
@@ -61,11 +64,11 @@ int	main()
 
   // first insert function version (single parameter):
   	mymap.insert ( std::pair<char,int>('a',100) );
-  	mymap.printBT(mymap.root);
+  	mymap.printBT();
 
 	mymap.insert ( std::pair<char,int>('z',200) );
 
-	mymap.printBT(mymap.root);
+	mymap.printBT();
   	std::pair<BinarySearchTree<char, int, select1st<std::pair<char, int> > >::iterator,bool> rett;
   	rett = mymap.insert ( std::pair<char,int>('z',500) );
   	if (rett.second==false) {
@@ -86,15 +89,15 @@ int	main()
   	for (itt=mymap.begin(); itt!=mymap.end(); ++itt)
     	std::cout << itt->first << " => " << itt->second << '\n';
 
-	mymap.printBT(mymap.root);
+	mymap.printBT();
 	//mymap.print_ascii_tree(mymap.header);
   	std::cout << "anothermap contains:\n";
   	for (itt=anothermap.begin(); itt!=anothermap.end(); ++itt)
     	std::cout << itt->first << " => " << itt->second << '\n';
-	mymap.printBT(mymap.root);
+	mymap.printBT();
 	itt = mymap.begin();
 	mymap.erase(itt);
-	mymap.printBT(mymap.root);
+	mymap.printBT();
 	itt = mymap.begin();
 	mymap.erase(itt);
   	std::cout << "mymap contains:\n";
@@ -102,7 +105,8 @@ int	main()
     	std::cout << itt->first << " => " << itt->second << '\n';
 	std::cout << mymap.size() << std::endl;
 
-	mymap.printBT(mymap.root);
+	mymap.printBT();
+	binary_search_tree.printBT();
 
 
 }
