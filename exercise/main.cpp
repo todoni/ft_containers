@@ -96,10 +96,10 @@ int	main()
     	std::cout << itt->first << " => " << itt->second << '\n';
 	mymap.printBT();
 	itt = mymap.begin();
-	mymap.erase(itt);
-	mymap.printBT();
-	itt = mymap.begin();
-	mymap.erase(itt);
+	//mymap.erase(itt);
+	//mymap.printBT();
+	//itt = mymap.begin();
+	//mymap.erase(itt);
   	std::cout << "mymap contains:\n";
 	for (itt=mymap.begin(); itt!=mymap.end(); ++itt)
     	std::cout << itt->first << " => " << itt->second << '\n';

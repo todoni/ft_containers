@@ -67,9 +67,9 @@ public:
 		pointer	operator->() const { return &(operator*()); }
 		iterator& operator++()
 		{
-			if (node->right != 0) {
+			if (node->right != NIL) {
                 node = node->right;
-                while (node->left != 0)
+                while (node->left != NIL)
                     node = node->left;
             } else {
                 link_type y = node->parent;
@@ -90,9 +90,9 @@ public:
         }
 		iterator& operator--()
 		{
-			if (node->left != 0) {
+			if (node->left != NIL) {
                 node = node->left;
-                while (node->right != 0)
+                while (node->right != NIL)
                     node = node->right;
             } else {
                 link_type y = node->parent;
@@ -117,7 +117,7 @@ public:
 protected:
 	//link_type				root();
 	link_type				header;
-	link_type				NIL;
+	static link_type				NIL;
 	static link_type	free_list;
 	static link_type 	next_avail;
 	static link_type 	last;
@@ -155,19 +155,19 @@ protected:
 	}
 	link_type	minimum(link_type x)
 	{
-		while (x->left != 0)
+		while (x->left != NIL)
 			x = x->left;
 		return (x);
 	}
 	link_type	maximum(link_type x)
 	{
-		while (x->right != 0)
+		while (x->right != NIL)
 			x = x->right;
 		return (x);
 	}
 	size_type	height(const link_type& node)
     {
-        if(node == NULL)
+        if(node == 0)
             return -1;
         else
             return std::max(height(node->left), height(node->right)) + 1;
@@ -178,7 +178,7 @@ protected:
 	}
 	void		set_height(link_type& node)
 	{
-		if(node != NULL)
+		if(node != 0)
         {
             set_height(node->left);
             set_height(node->right);
@@ -293,11 +293,11 @@ private:
     	z->parent = y;
     	z->left = NIL;
     	z->right = NIL;
-		z->height = height(y);
-		std::cout << "height: " << z->height << std::endl;
-		//x = z;
-		//x = balance(x);
-		//set_height(x);
+		z->height = height(z);
+		//std::cout << "height: " << z->height << std::endl;
+		x = z;
+		x = balance(root());
+		set_height(root());
 		return (iterator(z));
 	}
 	void	__erase(link_type x)
@@ -511,7 +511,7 @@ public:
 
 	void	inorder(link_type x)
 	{
-		if (x)
+		if (x != NIL)
 		{
 			inorder(x->left);
 			std::cout << "[Key: " << key(x) << " Value: " << x->value_field.second << "] ";
@@ -529,14 +529,15 @@ public:
 	//const_iterator find (const key_type& k) const;
 	void printBT(const std::string& prefix, const link_type node, bool isLeft)
 	{
-    	if( node != 0 )
+    	if( node != NIL )
     	{
         	std::cout << prefix;
 
         	std::cout << (isLeft ? "├──" : "└──" );
 
         // print the value of the node
-        	std::cout << key(node) << " " << height(node) << std::endl;
+        	//std::cout << key(node) << " " << height(node) << std::endl;
+        	std::cout << key(node) << std::endl;
 
         // enter the next tree level - left and right branch
         	printBT( prefix + (isLeft ? "│   " : "    "), node->left, true);
@@ -562,4 +563,6 @@ typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::node_allocato
 template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
 typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::value_allocator_type BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::value_allocator;
 
+template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
+typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::link_type BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::NIL = 0;
 #endif
