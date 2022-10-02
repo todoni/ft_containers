@@ -10,11 +10,14 @@ int	main()
 
 	std::cout << binary_search_tree.empty() << std::endl;
 	ret = binary_search_tree.insert(std::pair<int, int>(1, 2));
-	binary_search_tree.printBT();
+	//binary_search_tree.printBT();
+	binary_search_tree.printBT2();
 	std::pair <int, int> tmp = *ret.first;
 	std::cout << tmp.first << " " << tmp.second << std::endl;
 	//binary_search_tree.print();
 	ret = binary_search_tree.insert(std::make_pair(5, 2));
+	//binary_search_tree.printBT();
+	binary_search_tree.printBT2();
 
 	tmp = *ret.first;
 	std::cout << tmp.first << " " << tmp.second << std::endl;
@@ -107,6 +110,8 @@ int	main()
 
 	mymap.printBT();
 	binary_search_tree.printBT();
+	binary_search_tree.printBT2();
+	mymap.printBT2();
 
 
 }

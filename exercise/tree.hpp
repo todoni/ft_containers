@@ -27,7 +27,7 @@ class	BinarySearchTree
 protected:
 	struct	bst_node
 	{
-		size_type	height;
+		int	height;
 		bst_node	*parent;
 		bst_node	*left;
 		bst_node	*right;
@@ -67,9 +67,9 @@ public:
 		pointer	operator->() const { return &(operator*()); }
 		iterator& operator++()
 		{
-			if (node->right != 0) {
+			if (node->right != NIL) {
                 node = node->right;
-                while (node->left != 0)
+                while (node->left != NIL)
                     node = node->left;
             } else {
                 link_type y = node->parent;
@@ -90,9 +90,9 @@ public:
         }
 		iterator& operator--()
 		{
-			if (node->left != 0) {
+			if (node->left != NIL) {
                 node = node->left;
-                while (node->right != 0)
+                while (node->right != NIL)
                     node = node->right;
             } else {
                 link_type y = node->parent;
@@ -117,7 +117,7 @@ public:
 protected:
 	//link_type				root();
 	link_type				header;
-	link_type				NIL;
+	static link_type				NIL;
 	static link_type	free_list;
 	static link_type 	next_avail;
 	static link_type 	last;
@@ -155,19 +155,19 @@ protected:
 	}
 	link_type	minimum(link_type x)
 	{
-		while (x->left != 0)
+		while (x->left != NIL)
 			x = x->left;
 		return (x);
 	}
 	link_type	maximum(link_type x)
 	{
-		while (x->right != 0)
+		while (x->right != NIL)
 			x = x->right;
 		return (x);
 	}
 	size_type	height(const link_type& node)
     {
-        if(node == NULL)
+        if(node == NIL)
             return -1;
         else
             return std::max(height(node->left), height(node->right)) + 1;
@@ -178,7 +178,7 @@ protected:
 	}
 	void		set_height(link_type& node)
 	{
-		if(node != NULL)
+		if(node != NIL)
         {
             set_height(node->left);
             set_height(node->right);
@@ -296,8 +296,8 @@ private:
 		z->height = height(y);
 		std::cout << "height: " << z->height << std::endl;
 		//x = z;
-		//x = balance(x);
-		//set_height(x);
+		z = balance(z);
+		set_height(z);
 		return (iterator(z));
 	}
 	void	__erase(link_type x)
@@ -529,7 +529,7 @@ public:
 	//const_iterator find (const key_type& k) const;
 	void printBT(const std::string& prefix, const link_type node, bool isLeft)
 	{
-    	if( node != 0 )
+    	if( node != NIL )
     	{
         	std::cout << prefix;
 
@@ -553,7 +553,271 @@ public:
 	{
 		printBT(root());
 	}
-	
+
+#define MAX_HEIGHT 1000
+int lprofile[MAX_HEIGHT];
+int rprofile[MAX_HEIGHT];
+typedef bst_node asciinode;
+//adjust gap between left and right nodes
+static const int gap = 5;  
+
+//used for printing next node in the same level, 
+//this is the x coordinate of the next char printed
+int print_next;    
+
+int MIN (int X, int Y)  
+{
+  return ((X) < (Y)) ? (X) : (Y);
+}
+
+int MAX (int X, int Y)  
+{
+  return ((X) > (Y)) ? (X) : (Y);
+}
+
+asciinode * build_ascii_tree_recursive(link_type  t) 
+{
+  asciinode * node;
+  
+  if (t == NIL) return NIL;
+
+  //node = malloc(sizeof(asciinode));
+  node = node_allocator.allocate(1);
+  node->left = build_ascii_tree_recursive(t->left);
+  node->right = build_ascii_tree_recursive(t->right);
+  
+  if (node->left != NIL) 
+  {
+    node->left->parent_dir = -1;
+  }
+
+  if (node->right != NIL) 
+  {
+    node->right->parent_dir = 1;
+  }
+
+  sprintf(node->label, "%d", t->value_field.first);
+  node->lablen = strlen(node->label);
+
+  return node;
+}
+
+
+//Copy the tree into the ascii node structre
+asciinode * build_ascii_tree(link_type  t)
+{
+  asciinode *node;
+  if (t == NIL) return NIL;
+  node = build_ascii_tree_recursive(t);
+  node->parent_dir = 0;
+  return node;
+}
+
+//Free all the nodes of the given tree
+void free_ascii_tree(asciinode *node) 
+{
+  if (node == NIL) return;
+  free_ascii_tree(node->left);
+  free_ascii_tree(node->right);
+  free(node);
+}
+
+//The following function fills in the lprofile array for the given tree.
+//It assumes that the center of the label of the root of this tree
+//is located at a position (x,y).  It assumes that the edge_length
+//fields have been computed for this tree.
+void compute_lprofile(asciinode *node, int x, int y) 
+{
+  int i, isleft;
+  if (node == NIL) return;
+  isleft = (node->parent_dir == -1);
+  lprofile[y] = MIN(lprofile[y], x-((node->lablen-isleft)/2));
+  if (node->left != NIL) 
+  {
+	  for (i=1; i <= node->edge_length && y+i < MAX_HEIGHT; i++) 
+    {
+	    lprofile[y+i] = MIN(lprofile[y+i], x-i);
+    }
+  }
+  compute_lprofile(node->left, x-node->edge_length-1, y+node->edge_length+1);
+  compute_lprofile(node->right, x+node->edge_length+1, y+node->edge_length+1);
+}
+
+void compute_rprofile(asciinode *node, int x, int y) 
+{
+  int i, notleft;
+  if (node == NIL) return;
+  notleft = (node->parent_dir != -1);
+  rprofile[y] = MAX(rprofile[y], x+((node->lablen-notleft)/2));
+  if (node->right != NIL) 
+  {
+	  for (i=1; i <= node->edge_length && y+i < MAX_HEIGHT; i++) 
+    {
+	    rprofile[y+i] = MAX(rprofile[y+i], x+i);
+    }
+  }
+  compute_rprofile(node->left, x-node->edge_length-1, y+node->edge_length+1);
+  compute_rprofile(node->right, x+node->edge_length+1, y+node->edge_length+1);
+}
+
+//This function fills in the edge_length and 
+//height fields of the specified tree
+void compute_edge_lengths(asciinode *node) 
+{
+  int h, hmin, i, delta;
+  if (node == NIL) return;
+  compute_edge_lengths(node->left);
+  compute_edge_lengths(node->right);
+
+  /* first fill in the edge_length of node */
+  if (node->right == NIL && node->left == NIL) 
+  {
+	  node->edge_length = 0;
+  } 
+  else 
+  {
+    if (node->left != NIL) 
+    {
+	    for (i=0; i<node->left->height && i < MAX_HEIGHT; i++) 
+      {
+		    rprofile[i] = -INFINITY;
+	    }
+	    compute_rprofile(node->left, 0, 0);
+	    hmin = node->left->height;
+    } 
+    else 
+    {
+	    hmin = 0;
+    }
+	  if (node->right != NIL) 
+    {
+	    for (i=0; i<node->right->height && i < MAX_HEIGHT; i++) 
+      {
+		    lprofile[i] = INFINITY;
+	    }
+	    compute_lprofile(node->right, 0, 0);
+	    hmin = MIN(node->right->height, hmin);
+    } 
+    else 
+    {
+	    hmin = 0;
+    }
+	  delta = 4;
+	  for (i=0; i<hmin; i++) 
+    {
+	    delta = MAX(delta, gap + 1 + rprofile[i] - lprofile[i]);
+    }
+	  
+    //If the node has two children of height 1, then we allow the
+    //two leaves to be within 1, instead of 2 
+	  if (((node->left != NIL && node->left->height == 1) ||
+	      (node->right != NIL && node->right->height == 1))&&delta>4) 
+    {
+      delta--;
+    }
+	    
+    node->edge_length = ((delta+1)/2) - 1;
+  }
+
+  //now fill in the height of node
+  h = 1;
+  if (node->left != NIL) 
+  {
+	  h = MAX(node->left->height + node->edge_length + 1, h);
+  }
+  if (node->right != NIL) 
+  {
+	  h = MAX(node->right->height + node->edge_length + 1, h);
+  }
+  node->height = h;
+}
+
+//This function prints the given level of the given tree, assuming
+//that the node has the given x cordinate.
+void print_level(asciinode *node, int x, int level) 
+{
+  int i, isleft;
+  if (node == NIL) return;
+  isleft = (node->parent_dir == -1);
+  if (level == 0) 
+  {
+	  for (i=0; i<(x-print_next-((node->lablen-isleft)/2)); i++) 
+    {
+	    printf(" ");
+    }
+	  print_next += i;
+	  printf("%s", node->label);
+	  print_next += node->lablen;
+  } 
+  else if (node->edge_length >= level) 
+  {
+	  if (node->left != NIL) 
+    {
+	    for (i=0; i<(x-print_next-(level)); i++) 
+      {
+		    printf(" ");
+	    }
+	    print_next += i;
+	    printf("/");
+	    print_next++;
+    }
+	  if (node->right != NIL) 
+    {
+	    for (i=0; i<(x-print_next+(level)); i++) 
+      {
+		    printf(" ");
+	    }
+	    print_next += i;
+	    printf("\\");
+	    print_next++;
+    }
+  } 
+  else 
+  {
+	  print_level(node->left, 
+                x-node->edge_length-1, 
+                level-node->edge_length-1);
+	  print_level(node->right, 
+                x+node->edge_length+1, 
+                level-node->edge_length-1);
+  }
+}
+
+//prints ascii tree for given Tree structure
+void print_ascii_tree(link_type  t) 
+{
+  asciinode *proot;
+  int xmin, i;
+  if (t == NIL) return;
+  proot = build_ascii_tree(t);
+  compute_edge_lengths(proot);
+  for (i=0; i<proot->height && i < MAX_HEIGHT; i++) 
+  {
+	  lprofile[i] = INFINITY;
+  }
+  compute_lprofile(proot, 0, 0);
+  xmin = 0;
+  for (i = 0; i < proot->height && i < MAX_HEIGHT; i++) 
+  {
+	  xmin = MIN(xmin, lprofile[i]);
+  }
+  for (i = 0; i < proot->height; i++) 
+  {
+	  print_next = 0;
+	  print_level(proot, -xmin, i);
+	  printf("\n");
+  }
+  if (proot->height >= MAX_HEIGHT) 
+  {
+	  printf("(This tree is taller than %d, and may be drawn incorrectly.)\n", MAX_HEIGHT);
+  }
+  free_ascii_tree(proot); 
+}
+	void	printBT2()
+	{
+		print_ascii_tree(root());
+	}
+
 };
 
 template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
@@ -561,5 +825,8 @@ typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::node_allocato
 
 template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
 typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::value_allocator_type BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::value_allocator;
+
+template <class Key, class T, class KeyOfValue, class Compare, class Allocator>
+typename BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::link_type BinarySearchTree<Key, T, KeyOfValue, Compare, Allocator>::NIL = 0;
 
 #endif
