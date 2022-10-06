@@ -27,7 +27,7 @@ class	BinarySearchTree
 protected:
 	struct	bst_node
 	{
-		size_type	height;
+		int			height;
 		bst_node	*parent;
 		bst_node	*left;
 		bst_node	*right;
@@ -165,20 +165,20 @@ protected:
 			x = x->right;
 		return (x);
 	}
-	size_type	height(const link_type& node)
+	int	height(const link_type& node)
     {
-        if(node == 0)
+        if(node == NIL)
             return -1;
         else
             return std::max(height(node->left), height(node->right)) + 1;
     }
-	size_type	get_balance_factor(link_type& node)
+	int	get_balance_factor(link_type& node)
 	{
 		return (height(node->left) - height(node->right));
 	}
 	void		set_height(link_type& node)
 	{
-		if(node != 0)
+		if(node != NIL)
         {
             set_height(node->left);
             set_height(node->right);
@@ -206,8 +206,7 @@ protected:
                 node = RR_Rotation(node);
             else
                 node = RL_Rotation(node);
-        }
-        
+        } 
         return node;
     }
 
@@ -216,6 +215,8 @@ protected:
         link_type node = parent->left;
         parent->left = node->right;
         node->right = parent;
+		//rightmost() = maximum(root());
+		//leftmost() = minimum(root());
         return node;
     }
  
@@ -224,6 +225,8 @@ protected:
         link_type node = parent->right;
         parent->right = node->left;
         node->left = parent;
+		//leftmost() = minimum(root());
+		//rightmost() = maximum(root());
         return node;
     }
  
@@ -293,11 +296,15 @@ private:
     	z->parent = y;
     	z->left = NIL;
     	z->right = NIL;
-		z->height = height(z);
+		
+		//set_height(root());
+		//root() = balance(root());
+
+		//z->height = height(z);
 		//std::cout << "height: " << z->height << std::endl;
-		x = z;
-		x = balance(root());
-		set_height(root());
+		//x = z;
+		//x = balance(root());
+		//set_height(root());
 		return (iterator(z));
 	}
 	void	__erase(link_type x)
@@ -436,8 +443,8 @@ public:
 		    }
 			else
 				x->parent = y;  // needed in case x == 0
-		    if (header == z)
-		        header = y;
+		    if (root() == z)
+		        root() = y;
 		    else if (z->parent->left == z)
 		        z->parent->left = y;
 		    else 
@@ -449,8 +456,8 @@ public:
 		else
 		{  // y == z
 		    x->parent = y->parent;   // possibly x == 0
-		    if (header == z)
-		        header = x;
+		    if (root() == z)
+		        root() = x;
 		    else 
 			{
 				if (z->parent->left == z)
@@ -462,21 +469,21 @@ public:
 			{
 				if (z->right == NIL)  // z->left must be 0 also
 					leftmost() = z->parent;
+		    	else
+		        	leftmost() = minimum(x);
 			}       // makes leftmost() == header if z == root()
-		    else
-		        leftmost() = minimum(x);
 		    if (rightmost() == z)  
 			{
 				if (z->left == NIL) // z->right must be 0 also
 					rightmost() = z->parent;  
+		    	else  // x == z->left
+		        	rightmost() = maximum(x);
 			}       // makes rightmost() == header if z == root()
-		    else  // x == z->left
-		        rightmost() = maximum(x);
 		}
-		x = balance(root());
-		set_height(root());
-		value_allocator.destroy(value_allocator.address(value(x)));
-		node_allocator.destroy(x);
+		//root() = balance(root());
+		//set_height(root());
+		value_allocator.destroy(value_allocator.address(value(y)));
+		node_allocator.destroy(y);
 		//node_allocator.deallocate(y, 1);
 		--node_count;
 	}
@@ -536,8 +543,8 @@ public:
         	std::cout << (isLeft ? "├──" : "└──" );
 
         // print the value of the node
-        	//std::cout << key(node) << " " << height(node) << std::endl;
-        	std::cout << key(node) << std::endl;
+        	std::cout << key(node) << " " << height(node) << std::endl;
+        	//std::cout << key(node) << std::endl;
 
         // enter the next tree level - left and right branch
         	printBT( prefix + (isLeft ? "│   " : "    "), node->left, true);
