@@ -185,29 +185,120 @@ protected:
             node->height = height(node);
         }
 	}
-	
-	link_type balance(link_type& node)
+	link_type Right_rotate(link_type curr_nd){
+            link_type lft_chd = curr_nd->left;
+            link_type rgt_suc = lft_chd->right;
+
+            // Perform rotation
+            lft_chd->right = curr_nd;
+            curr_nd->left = rgt_suc;
+
+            // update parent pointer of current pointed node and child node 
+            lft_chd->parent = curr_nd->parent;
+            curr_nd->parent = lft_chd;
+            if(rgt_suc != NIL)
+                rgt_suc->parent = curr_nd;
+        
+            // Update heights
+            lft_chd->height = std::max(get_height(lft_chd->left), get_height(lft_chd->right)) + 1;
+            curr_nd->height = std::max(get_height(curr_nd->left), get_height(curr_nd->right)) + 1;
+
+            return lft_chd;
+        }
+
+        link_type Left_rotate(link_type curr_nd){
+            link_type rgt_chd =  curr_nd->right;
+            link_type lft_suc = rgt_chd->left;
+        
+            // Perform rotation
+            rgt_chd->left = curr_nd;
+            curr_nd->right = lft_suc;
+
+            // update parent pointer of current pointed node and child node 
+            rgt_chd->parent = curr_nd->parent;
+            curr_nd->parent = rgt_chd;
+            if(lft_suc != NIL)
+                lft_suc->parent = curr_nd;
+
+            // Update heights
+            rgt_chd->height = std::max(get_height(rgt_chd->left), get_height(rgt_chd->right)) + 1;
+            curr_nd->height = std::max(get_height(curr_nd->left), get_height(curr_nd->right)) + 1;
+
+            return rgt_chd;
+        }
+	int get_height(link_type ptr_nd){
+            if(ptr_nd == NIL)
+                return -1;
+
+            return ptr_nd->height;
+        }
+
+	int cal_balance(link_type nd_ptr)
+	{ return get_height(nd_ptr->left) - get_height(nd_ptr->right); }
+	void balance(link_type& node)
     {
         //bf is Called Balance Factor
-        int	bf = get_balance_factor(node);
-        
-        //If Left Subtree Violates AVL Property
+		link_type prev_node = node;
+		
+		for (link_type p = prev_node; p != NIL; p = p->parent)
+		{
+			int	bf = get_balance_factor(p);
+        	
+			if( bf > 1 ){       
+                    if(value(node) > value(p->left))
+                        p->left = Left_rotate(p->left);
+
+                    // update parent's pointer
+                    link_type par_ptr = p->parent;
+                    if(par_ptr != NIL && par_ptr->right == p)
+                        par_ptr->right = Right_rotate(p);
+                    else if(par_ptr != NIL && par_ptr->left == p)
+                        par_ptr->left = Right_rotate(p);
+                    else
+                        Right_rotate(p);
+                    
+                // Right bias unbalance
+                }else if(bf < -1){      
+                    if(value(node) < value(p->right))
+                        p->right = Right_rotate(p->right);
+
+                    // update parent's pointer
+                    link_type par_ptr = p->parent;
+                    if(par_ptr != NIL && par_ptr->right == p)
+                        par_ptr->right = Left_rotate(p);
+                    else if(par_ptr != NIL && par_ptr->left == p)
+                        par_ptr->left = Left_rotate(p);
+                    else  // p equal root 
+                        Left_rotate(p);
+
+                // else, the sub-tree is already balanced
+                }else{  
+                    p->height = std::max(get_height(p->left), get_height(p->right)) + 1;
+                } 
+
+                // finally update the new root pointer 
+                if(p->parent == NIL)
+                    root() = p;
+            }
+        /*//If Left Subtree Violates AVL Property
         if(bf > 1)
         {    
-            if(get_balance_factor(node->left) > 0)
-                node = LL_Rotation(node);
+            if(get_balance_factor(p->left) > 0)
+                p = LL_Rotation(p);
             else
-                node = LR_Rotation(node);
+                p = LR_Rotation(p);
         }
         //If Right Subtree Violates AVL Property
         else if(bf < -1)
         {
-            if(get_balance_factor(node->right) < 0)
-                node = RR_Rotation(node);
+            if(get_balance_factor(p->right) < 0)
+                p = RR_Rotation(p);
             else
-                node = RL_Rotation(node);
-        } 
-        return node;
+                p = RL_Rotation(p);
+        }
+		if (p->parent != NIL)
+			root() = p;
+		}*/
     }
 
     link_type LL_Rotation(link_type& parent)
@@ -215,8 +306,7 @@ protected:
         link_type node = parent->left;
         parent->left = node->right;
         node->right = parent;
-		//rightmost() = maximum(root());
-		//leftmost() = minimum(root());
+		set_height(node);
         return node;
     }
  
@@ -225,8 +315,7 @@ protected:
         link_type node = parent->right;
         parent->right = node->left;
         node->left = parent;
-		//leftmost() = minimum(root());
-		//rightmost() = maximum(root());
+		set_height(node);
         return node;
     }
  
@@ -296,9 +385,56 @@ private:
     	z->parent = y;
     	z->left = NIL;
     	z->right = NIL;
+		x = z;
+
+
+		//for (link_type p = x; p != root(); p = p->parent)
+		//{
+		while (x != root())
+		{	
+			int	bf = cal_balance(x);
+        	
+			if( bf > 1 ){       
+                    if(key(x) > key(x->left))
+                        x->left = Left_rotate(x->left);
+
+                    // update parent's pointer
+                    link_type par_ptr = x->parent;
+                    if(par_ptr != NIL && par_ptr->right == x)
+                        par_ptr->right = Right_rotate(x);
+                    else if(par_ptr != NIL && par_ptr->left == x)
+                        par_ptr->left = Right_rotate(x);
+                    if (x == root())
+                        Right_rotate(x);
+                    
+                // Right bias unbalance
+                }else if(bf < -1){      
+                    if(key(x) < key(x->right))
+                        x->right = Right_rotate(x->right);
+
+                    // update parent's pointer
+                    link_type par_ptr = x->parent;
+                    if(par_ptr != NIL && par_ptr->right == x)
+                        par_ptr->right = Left_rotate(x);
+                    else if(par_ptr != NIL && par_ptr->left == x)
+                        par_ptr->left = Left_rotate(x);
+                    if (x == root())  // p equal root 
+                        Left_rotate(x);
+
+                // else, the sub-tree is already balanced
+                }else{  
+                    x->height = std::max(get_height(x->left), get_height(x->right)) + 1;
+                } 
+
+                // finally update the new root pointer 
+                if(x->parent == NIL)
+		      		root() = x;
+		}
+           //}
 		
 		//set_height(root());
-		//root() = balance(root());
+		//x = z;
+		//balance(z);
 
 		//z->height = height(z);
 		//std::cout << "height: " << z->height << std::endl;
@@ -534,7 +670,7 @@ public:
 	}
 
 	//const_iterator find (const key_type& k) const;
-	void printBT(const std::string& prefix, const link_type node, bool isLeft)
+	void printBT(const std::string& prefix,  link_type node, bool isLeft)
 	{
     	if( node != NIL )
     	{
@@ -543,7 +679,7 @@ public:
         	std::cout << (isLeft ? "├──" : "└──" );
 
         // print the value of the node
-        	std::cout << key(node) << " " << height(node) << std::endl;
+        	std::cout << key(node) << " " << cal_balance(node) << std::endl;
         	//std::cout << key(node) << std::endl;
 
         // enter the next tree level - left and right branch

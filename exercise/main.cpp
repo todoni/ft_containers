@@ -78,7 +78,9 @@ int	main()
 	// second insert function version (with hint position):
   	BinarySearchTree<char, int, select1st<std::pair<char, int> > >::iterator itt = mymap.begin();
   	mymap.insert (itt, std::pair<char,int>('b',300));  // max efficiency inserting
+	mymap.printBT();
   	mymap.insert (itt, std::pair<char,int>('c',400));  // no max efficiency inserting
+	mymap.printBT();
 	
 	// third insert function version (range insertion):
 	BinarySearchTree<char, int, select1st<std::pair<char, int> > > anothermap;
