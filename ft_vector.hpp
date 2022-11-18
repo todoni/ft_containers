@@ -196,6 +196,17 @@ public:
     	return (*this);
 	}
 protected:
+	typename vector<T, Allocator>::size_type __recommend(size_type __new_size) const
+	{
+    	const size_type __ms = max_size();
+    	if (__new_size > __ms)
+        	throw std::length_error("vector");
+    	const size_type __cap = capacity();
+    	if (__cap >= __ms / 2)
+        	return __ms;
+    	return _VSTD::max<size_type>(2*__cap, __new_size);
+	}
+
 	void	insert_aux(iterator position, const value_type& x)
 	{
 		if (finish != end_of_storage) 
@@ -205,9 +216,10 @@ protected:
 			*position = x;
 			++finish;
     	}
-		else 
+		else //TODO std 처럼 바꾸기
 		{
-			size_type len = 2 * size() + 1;
+			//size_type len = size() ?  2 * size() : 1;
+			size_type len = __recommend(size() + 1);
 			iterator tmp = static_allocator.allocate(len);
 			std::uninitialized_copy(begin(), position, tmp);
 			static_allocator.construct(tmp + (position - begin()), x);
@@ -219,6 +231,8 @@ protected:
 			start = tmp;
    	 	}
 	}
+
+	
 
 public:
 	void		push_back(const value_type& val)
@@ -270,7 +284,7 @@ public:
 		}
 		else
 		{
-			size_type len = size() + std::max(size(), n);
+			size_type len = __recommend(size() + n);
 			size_type	save = size();
 			iterator tmp = static_allocator.allocate(len);
 			std::uninitialized_copy(begin(), position, tmp);
@@ -308,7 +322,8 @@ public:
 		}
 		else
 		{
-			size_type len = size() + std::max(size(), n);
+			//size_type len = size() + std::max(size(), n);
+			size_type len = __recommend(size() + n);
 			size_type	save = size();
 			iterator tmp = static_allocator.allocate(len);
 			std::uninitialized_copy(begin(), position, tmp);
