@@ -11,6 +11,10 @@ int	main()
 	ft::vector<int> third (second.begin(),second.end());  // iterating through second
   	ft::vector<int> fourth (third);                       // a copy of third
 
+	std::vector<int> first2;                                // empty vector of ints
+	std::vector<int> second2 (4,100);                       // four ints with value 100
+	std::vector<int> third2 (second2.begin(),second2.end());  // iterating through second
+  	std::vector<int> fourth2 (third2);
 
   // the iterator constructor can also be used to construct from arrays:
   	int myints[] = {16,2,77,29};
@@ -53,6 +57,23 @@ int	main()
 		first.pop_back();
 		std::cout << "The contents of first are:";
   		for (ft::vector<int>::iterator it = first.begin(); it != first.end(); ++it)
+    		std::cout << ' ' << *it;
+  		std::cout << '\n';
+	}
+
+	std::cout << "std first2" << std::endl;
+	for (int i = 0; i < 10; i++)
+		first2.push_back(i);
+	std::cout << "The contents of first2 are: ";
+	for (size_t i = 0; i < first2.size(); i++)
+		std::cout << first2[i] << " ";
+	std::cout << std::endl;
+	
+	while (first2.size() != 0)
+	{
+		first2.pop_back();
+		std::cout << "The contents of first2 are:";
+  		for (std::vector<int>::iterator it = first2.begin(); it != first2.end(); ++it)
     		std::cout << ' ' << *it;
   		std::cout << '\n';
 	}
@@ -146,7 +167,73 @@ int	main()
 		std::cout << ' ' << myvector2[i];
 	std::cout << '\n';
 
+	ft::vector<int> firstt;
+    ft::vector<int> secondd;
+    ft::vector<int> thirdd;
 
+	std::vector<int> firstt2;
+    std::vector<int> secondd2;
+    std::vector<int> thirdd2;
+
+    first.assign (7,100);             // 7 ints with a value of 100
+	std::cout << first.capacity() << std::endl;
+
+    ft::vector<int>::iterator ittt;
+    ittt=first.begin()+1;
+
+    second.assign (ittt,first.end()-1); // the 5 central values of first
+	std::cout << second.capacity() << std::endl;
+
+    int myintss[] = {1776,7,4};
+    third.assign (myintss,myintss+3);   // assigning from array.
+	std::cout << third.capacity() << std::endl;
+
+    std::cout << "Size of first: " << int (first.size()) << '\n';
+	std::cout << "first contains:";
+	for (unsigned i=0; i<first.size(); i++)
+		std::cout << ' ' << first.at(i);
+	std::cout << std::endl;
+    std::cout << "Size of second: " << int (second.size()) << '\n';
+	std::cout << "second contains:";
+	for (unsigned i=0; i<second.size(); i++)
+		std::cout << ' ' << second.at(i);
+	std::cout << std::endl;
+    std::cout << "Size of third: " << int (third.size()) << '\n';
+	std::cout << "third contains:";
+	for (unsigned i=0; i<third.size(); i++)
+		std::cout << ' ' << third.at(i);
+	std::cout << std::endl;
+
+	std::cout << "\nstl assign" << std::endl;
+	first2.assign (7,100);             // 7 ints with a value of 100
+	std::cout << first2.capacity() << std::endl;
+
+    std::vector<int>::iterator ittt2;
+    ittt2=first2.begin()+1;
+
+    second2.assign (ittt2,first2.end()-1); // the 5 central values of first
+	std::cout << second2.capacity() << std::endl;
+
+    //int myintss[] = {1776,7,4};
+    third2.assign (myintss,myintss+3);   // assigning from array.
+	std::cout << third2.capacity() << std::endl;
+
+    std::cout << "Size of first: " << int (first2.size()) << '\n';
+	std::cout << "first contains:";
+	for (unsigned i=0; i<first2.size(); i++)
+		std::cout << ' ' << first2.at(i);
+	std::cout << std::endl;
+    std::cout << "Size of second: " << int (second2.size()) << '\n';
+    std::cout << "first contains:";
+	for (unsigned i=0; i<second2.size(); i++)
+		std::cout << ' ' << second2.at(i);
+	std::cout << std::endl;
+	std::cout << "Size of third: " << int (third2.size()) << '\n';
+	std::cout << "first contains:";
+	for (unsigned i=0; i<third2.size(); i++)
+		std::cout << ' ' << third2.at(i);
+	std::cout << std::endl;
+	
 	ft::vector<int> test_at(10);   // 10 zero-initialized ints
   // assign some values:
   	for (unsigned i=0; i < test_at.size(); i++)

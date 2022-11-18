@@ -337,6 +337,31 @@ public:
 			start = tmp;
 		}	
 	}
+	template <class InputIterator>
+	void assign(InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type * = 0)
+	{
+		size_type	n = std::distance(first, last);
+		size_type	len = __recommend(n);
+		iterator tmp = static_allocator.allocate(len);
+		std::uninitialized_copy(first, last, tmp);
+		while (finish != start)
+			static_allocator.destroy(--finish);
+		end_of_storage = tmp + len;
+		finish = tmp + n;
+		start = tmp;
+	}
+	void assign(size_type n, const value_type& val)
+	{
+		size_type len = __recommend(n);
+		iterator tmp = static_allocator.allocate(len);
+		std::uninitialized_fill_n(tmp, n, val);
+		while (finish != start)
+			static_allocator.destroy(--finish);
+		static_allocator.deallocate(start, capacity());
+		end_of_storage = tmp + len;
+		finish = tmp + n;
+		start = tmp;
+	}
 	iterator	erase(iterator position)
 	{
 		if (position + 1 != end())
