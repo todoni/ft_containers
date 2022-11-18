@@ -4,6 +4,7 @@
 # include <memory>
 # include <algorithm> //TODO: ft_algorithm 구현 되면 바꿔야함
 # include "ft_iterator.hpp"
+# include "ft_type_traits.hpp"
 
 # ifndef Allocator
 # define Allocator allocator
@@ -136,7 +137,7 @@ public:
 	template <class InputIterator>
 	vector (InputIterator first, InputIterator last, 
 				const allocator_type& alloc = allocator_type(), 
-				typename std::enable_if<!std::is_integral<InputIterator>::value,
+				typename ft::enable_if<!ft::is_integral<InputIterator>::value,
                                 InputIterator>::type * = 0)
 		:static_allocator(alloc)
 	{
@@ -285,7 +286,7 @@ public:
 	}
 	template <class InputIterator>
 	void	insert(iterator position, InputIterator first, InputIterator last,
-			typename std::enable_if<!std::is_integral<InputIterator>::value,
+			typename ft::enable_if<!ft::is_integral<InputIterator>::value,
                                 				InputIterator>::type * = 0)
 	{
 		size_type n = std::distance(first, last);
