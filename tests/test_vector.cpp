@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "ft_vector.hpp"
+#include "ft_algorithm.hpp"
 #define BUFFER_SIZE 4096
 struct Buffer
 {
