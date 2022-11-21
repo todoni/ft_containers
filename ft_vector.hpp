@@ -2,6 +2,7 @@
 # define FT_VECTOR_HPP
 
 # include <memory>
+# include "ft_algorithm.hpp"
 # include <algorithm> //TODO: ft_algorithm 구현 되면 바꿔야함
 # include "ft_iterator.hpp"
 # include "ft_type_traits.hpp"
@@ -409,7 +410,7 @@ inline bool operator!=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 template <class T, class Alloc>
 inline bool operator<(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
-	return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+	return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 template <class T, class Alloc>
