@@ -5,7 +5,7 @@
 # include <iostream>
 # include <iterator>
 # include <utility>
-# include "ft_function.hpp"
+# include "ft_functional.hpp"
 
 template <class Key, class T, class KeyOfValue, class Compare = std::less<Key>, class Allocator = std::allocator<T> >
 class	BinarySearchTree

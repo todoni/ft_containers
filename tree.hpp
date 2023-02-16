@@ -2,8 +2,8 @@
 # define TREE_HPP
 
 # include <memory>
-# include <functional>
-# include <utility> //TODO: ft_utility.hpp
+# include "ft_functional.hpp"
+# include "ft_utility.hpp" //TODO: ft_utility.hpp
 
 template<class Key, class Value, class KeyOfValue, class Compare>
 class	avl_tree
