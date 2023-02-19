@@ -2,6 +2,7 @@
 # define FT_VECTOR_HPP
 
 # include <memory>
+# include <cstddef>
 # include "ft_algorithm.hpp"
 # include <algorithm> //TODO: ft_algorithm 구현 되면 바꿔야함
 # include "ft_iterator.hpp"
@@ -21,14 +22,14 @@ class vector
 public:
 	typedef T value_type;
 	typedef Allocator allocator_type;
-	typedef typename allocator_type::reference reference;
-	typedef typename allocator_type::const_reference const_reference;
-	typedef typename allocator_type::pointer pointer;
-	typedef typename allocator_type::const_pointer const_pointer;
+	typedef T& reference;
+	typedef const T& const_reference;
+	typedef T* pointer;
+	typedef const T* const_pointer;
 	typedef pointer iterator;
 	typedef const_pointer const_iterator;
-	typedef typename allocator_type::size_type size_type;
-	typedef typename allocator_type::difference_type difference_type;
+	typedef std::size_t size_type;
+	typedef long difference_type;
 	typedef ft::reverse_iterator<iterator>	reverse_iterator;
 	typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
@@ -44,13 +45,13 @@ public:
     const_iterator begin() const { return start; }
     iterator end() { return finish; }
     const_iterator end() const { return finish; }
-    reverse_iterator rbegin() { return reverse_iterator(end()); }
+    reverse_iterator rbegin() { return reverse_iterator(finish); }
     const_reverse_iterator rbegin() const { 
-        return const_reverse_iterator(end()); 
+        return const_reverse_iterator(finish); 
     }
-    reverse_iterator rend() { return reverse_iterator(begin()); }
+    reverse_iterator rend() { return reverse_iterator(start); }
     const_reverse_iterator rend() const { 
-        return const_reverse_iterator(begin()); 
+        return const_reverse_iterator(start); 
     }
 
 	/* capacity */
@@ -233,19 +234,34 @@ protected:
    	 	}
 	}
 
-	
+	void construct_at_end(pointer new_end, const value_type &val) {
+    for (; finish != new_end; ++finish) {
+      static_allocator.construct(finish, val);
+    }
+  }
+
+	template <class Iterator1, class Iterator2>
+  	void construct_at_end(Iterator1 new_end, Iterator2 prev) {
+    for (; finish != new_end; ++finish, ++prev) {
+      static_allocator.construct(finish, *prev);
+    }
+  }
 
 public:
 	void		push_back(const value_type& val)
 	{
-		if (finish != end_of_storage)
+		/*if (finish != end_of_storage)
 		{
-	    /* Borland bug */
+	    // Borland bug 
 	    	static_allocator.construct(finish, val);
 	    	finish++;
 		}
 		else
 	    	insert_aux(end(), val);
+		*/
+		if (size() == capacity())
+			this->reserve(__recommend(size() + 1));
+    	construct_at_end(finish + 1, val);
 	}
 	void		pop_back(void)
 	{
@@ -258,7 +274,7 @@ public:
 		if (finish != end_of_storage && position == end())
 		{
 	    	/* Borland bug */
-	    	construct(finish, val);
+	    	static_allocator.construct(finish, val);
 	    	finish++;
 		}
 		else
@@ -267,9 +283,9 @@ public:
 	}
 	void		insert(iterator position, size_type n, const value_type& val)
 	{
-		if (end_of_storage - finish >= n)
+		if (size_type(end_of_storage - finish) >= n)
 		{
-			if (end() - position > n)
+			if (size_type(end() - position) > n)
 			{
 				std::uninitialized_copy(end() - n, end(), end());
 				std::copy_backward(position, end() - n, end());
@@ -299,15 +315,39 @@ public:
 			start = tmp;
 		}
 	}
+	
 	template <class InputIterator>
+  iterator insert(iterator position, InputIterator first, InputIterator last,
+                  typename ft::enable_if<!ft::is_integral<InputIterator>::value,
+                                         InputIterator>::type * = NULL) {
+    size_type dist = position - start;
+    size_type n = std::distance(first, last);
+    if (end_of_storage < finish + n) {
+      this->reserve(__recommend(size() + n));
+    }
+    pointer new_position = start + dist;
+    if (new_position == finish)
+      construct_at_end(finish + n, first);
+    else {
+      std::memmove(new_position + n, new_position,
+                   sizeof(value_type) * (finish - new_position));
+      for (size_type i = 0; i < n; ++i, ++first) {
+        static_allocator.construct(new_position + i, *first);
+        ++finish;
+      }
+    }
+    return new_position;
+  }
+
+	/*template <class InputIterator>
 	void	insert(iterator position, InputIterator first, InputIterator last,
 			typename ft::enable_if<!ft::is_integral<InputIterator>::value,
-                                				InputIterator>::type * = 0)
+                                				InputIterator>::type * = NULL)
 	{
 		size_type n = std::distance(first, last);
-		if (end_of_storage - finish >= n)
+		if (size_type(end_of_storage - finish) >= n)
 		{
-			if (end() - position > n)
+			if (size_type(end() - position) > n)
 			{
 				std::uninitialized_copy(end() - n, end(), end());
 				std::copy_backward(position, end() - n, end());
@@ -337,7 +377,7 @@ public:
 			finish = tmp + save + n;
 			start = tmp;
 		}	
-	}
+	}*/
 	template <class InputIterator>
 	void assign(InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type * = 0)
 	{
@@ -376,7 +416,7 @@ public:
 		iterator i = std::copy(last, end(), first);
 		while (finish != i)
 			static_allocator.destroy(--finish);
-		return (i);
+		return (first);
 	}
 	void		swap(vector& x)
 	{

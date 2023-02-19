@@ -10,13 +10,13 @@ struct pair
 	typedef T1	first_type;
 	typedef T2	second_type;
 
-	first_type	first;
-	second_type	second;
+	static first_type	first;
+	static second_type	second;
 
 public:
 	pair()
 		:first(T1()), second(T2()) { }
-	template<class U, class V> pair(const pair<U,V>& pr)
+	template<class U, class V> pair(const pair<U,V>& pr) : first(T1()), second(T2())
 	{
 		this->first = pr.first;
 		this->second = pr.second;
