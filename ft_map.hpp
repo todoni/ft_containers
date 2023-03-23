@@ -5,7 +5,7 @@
 # include "./exercise/ft_functional.hpp"
 # include "ft_utility.hpp" //TODO: ft::pair 구현 후 바꿔야함
 # include "ft_iterator.hpp"
-# include "rb_tree.hpp"
+# include "tree.hpp"
 
 namespace ft
 {
@@ -47,8 +47,8 @@ public:
 	};
 
 private:
-	typedef rb_tree<key_type, mapped_type, select1st<value_type>, key_compare> rep_type;
-
+	//typedef rb_tree<key_type, mapped_type, select1st<value_type>, key_compare> rep_type;
+	typedef tree<value_type, Compare, Alloc> rep_type;
 	rep_type t;
 
 public:
@@ -56,9 +56,9 @@ public:
     typedef typename rep_type::reference reference;
     typedef typename rep_type::const_reference const_reference;
     typedef typename rep_type::iterator iterator;
-    typedef typename rep_type::const_iterator const_iterator;
-    typedef typename rep_type::reverse_iterator reverse_iterator;
-    typedef typename rep_type::const_reverse_iterator const_reverse_iterator;
+    //typedef typename rep_type::const_iterator const_iterator;
+    //typedef typename rep_type::reverse_iterator reverse_iterator;
+    //typedef typename rep_type::const_reverse_iterator const_reverse_iterator;
     typedef typename rep_type::size_type size_type;
     typedef typename rep_type::difference_type difference_type;
 

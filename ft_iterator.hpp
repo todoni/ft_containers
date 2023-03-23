@@ -142,5 +142,82 @@ typename reverse_iterator<Iterator1>::difference_type operator-(
 	return (rhs.base() - lhs.base());
 }
 
+template <class T, class NodePtr, class DiffType>
+class tree_iterator
+{
+public:
+	typedef std::bidirectional_iterator_tag	iterator_category;
+	typedef T								value_type;
+	typedef DiffType						differnce_type;
+	typedef NodePtr							node_pointer;
+	typedef value_type&						reference;
+	typedef T*								pointer;
+
+private:
+	node_pointer	node;
+	tree_iterator(node_pointer x) : node(x) {}
+
+public:
+	tree_iterator();
+	bool operator==(const tree_iterator& y) const { return node == y.node; }
+	reference operator*() const { return node->value; }
+	//reference operator->() const { return (value(node)); };
+	pointer	operator->() const { return &(operator*()); }
+	tree_iterator& operator++()
+	{
+		if (node->right != 0)
+		{
+        	node = node->right;
+            while (node->left != 0)
+                node = node->left;
+        }
+		else
+		{
+            node_pointer y = node->parent;
+            while (node == y->right) {
+                node = y;
+                y = y->parent;
+            }
+            if (node->right != y) // necessary because of rightmost 
+                node = y;
+        }
+		return (*this);
+	}
+	tree_iterator operator++(int)
+	{
+        tree_iterator tmp = *this;
+        ++*this;
+        return tmp;
+    }
+	tree_iterator& operator--()
+	{
+		if (node->left != 0)
+		{
+            node = node->left;
+            while (node->right != 0)
+                node = node->right;
+        }
+		else
+		{
+            node_pointer y = node->parent;
+            while (node == y->left)
+			{
+                node = y;
+                y = y->parent;
+            }
+            if (node->left != y) // necessary because of rightmost 
+                node = y;
+        }
+			return (*this);
+		}
+	tree_iterator operator--(int)
+	{
+        tree_iterator tmp = *this;
+        --*this;
+        return tmp;
+    }
+
+};
+
 }
 #endif
